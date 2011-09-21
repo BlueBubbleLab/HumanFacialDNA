@@ -1,0 +1,3 @@
+[submodule "inSight"]
+	path = inSight
+	url = git@github.com:ThirdSight/inSight.git
