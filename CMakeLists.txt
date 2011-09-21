@@ -1,5 +1,5 @@
 PROJECT(INSIGHT_DEMO)
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 #-------------------------------------------------------------------------------
 # General Settings
@@ -53,6 +53,7 @@ SET(INSIGHT_STANDALONE FALSE)
 ADD_SUBDIRECTORY(${INSIGHT_DEMO_SOURCE_DIR}/inSight insight)
 INCLUDE_DIRECTORIES(${INSIGHT_SOURCE_DIR}/src)
 LINK_DIRECTORIES(${INSIGHT_BINARY_DIR})
+FILE(COPY ${INSIGHT_SOURCE_DIR}/data DESTINATION ${INSIGHT_DEMO_BINARY_DIR})
 
 #-------------------------------------------------------------------------------
 # Include 3rd party library headers
