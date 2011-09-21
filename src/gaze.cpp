@@ -150,11 +150,6 @@ int main (int argc, char *argv[])
     	    {
     	    	std::cerr << insight.getError() << std::endl;
     	    }
-            else
-            {
-                // override standard bindings after successfull init
-                insight.setKeyBindings('t', 'b', ' ');
-            }
     	    cvMoveWindow(HUMAN_NAME,0,0);
     	}
     	else
@@ -166,7 +161,7 @@ int main (int argc, char *argv[])
             else
             {
                 cv::Point gaze;
-                if (insight.isGazeInit() && insight.getEyeGaze(gaze))
+                if (insight.getEyeGaze(gaze))
                 {
                     int x = gaze.x / width;
                     int y = gaze.y / height;
