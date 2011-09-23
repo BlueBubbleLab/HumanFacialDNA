@@ -14,8 +14,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#define W 6
-#define H 4
+#define W 12
+#define H 9
 #define BORDER 2
 #define HARDCODED_PARAMS 1
 
@@ -127,7 +127,6 @@ int main (int argc, char *argv[])
     std::vector<cv::Rect> sections(W*H);
     float width = pixel_width/float(W);
     float height = pixel_height/float(H);
-    std::cout << width << height << std::endl;
     for (int i = 0; i < H; i++)
     {
         for (int j = 0; j < W; j++)
@@ -138,7 +137,8 @@ int main (int argc, char *argv[])
             temp.setTo(cv::Scalar(255,255,255));
         }
     }
-    int prev_x = 0, prev_y = 0;
+    cv::Point2i prev_head_gaze(0);
+    cv::Point2i prev_eye_gaze(0);
     // Start indefinite loop and track eye gaze
     for(;;)
     {
@@ -160,22 +160,36 @@ int main (int argc, char *argv[])
     	    }
             else
             {
-                cv::Point gaze;
-                if (insight.getEyeGaze(gaze))
+                cv::Point2i head_gaze, eye_gaze;
+                if (insight.getHeadGaze(head_gaze))
                 {
-                    int x = gaze.x / width;
-                    int y = gaze.y / height;
-                  std::cout << gaze.x << " " << width << std::endl;
-                  std::cout << gaze.y << " " << height << std::endl;
-                    if (prev_x != x || prev_y != y)
+                    head_gaze = cv::Point2i(head_gaze.x / width, head_gaze.y / height);
+                    if (prev_head_gaze != head_gaze)
                     {
-                        temp = view(sections[prev_y*W+prev_x]);
+                        temp = view(sections[prev_head_gaze.y*W+prev_head_gaze.x]);
                         temp.setTo(cv::Scalar(255,255,255));
                     }
-                    temp = view(sections.at(y*W+x));
+                    temp = view(sections.at(head_gaze.y*W+head_gaze.x));
                     temp.setTo(cv::Scalar(255,0,0));
-                    prev_x = x;
-                    prev_y = y;
+                    prev_head_gaze = head_gaze;
+                }
+                if (insight.getEyeGaze(eye_gaze))
+                {
+                    eye_gaze = cv::Point2i(eye_gaze.x / width, eye_gaze.y / height);
+                    if (prev_eye_gaze != eye_gaze && prev_eye_gaze != head_gaze)
+                    {
+                        temp = view(sections[prev_eye_gaze.y*W+prev_eye_gaze.x]);
+                        temp.setTo(cv::Scalar(255,255,255));
+                    }
+
+                    temp = view(sections.at(eye_gaze.y*W+eye_gaze.x));
+                    cv::Scalar color(0,0,255);
+                    if (eye_gaze == head_gaze)
+                    {
+                        color = cv::Scalar(128,0,128);
+                    }
+                    temp.setTo(color);
+                    prev_eye_gaze = eye_gaze;
                 }
             }
     	}
