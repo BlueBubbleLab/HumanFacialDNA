@@ -9,104 +9,99 @@
 #include "../inSight/src/insight.h"
 #include "demo_version.h"
 
-#ifdef __APPLE__ 
-//Needed to resolve data dir on osx
-#include <CoreFoundation/CoreFoundation.h>
-#endif
 
-#define W 6
-#define H 4
-#define BORDER 2
-#define HARDCODED_PARAMS 1
 
 int main (int argc, char *argv[])
 {
     cv::VideoCapture cap;
     std::string auth_key;
+    std::string file_prefix;
+    std::string file_suffix;
     std::string file_name;
+    std::vector<std::string> batch_file;
+    int file_number;
+    int num_files;
+    int frame_number;
+    bool batch_processing = false;
     std::string data_dir = "../data/";
-    std::string input;
-    bool is_capturing = false;
     switch (argc)
     {
-        case 4:
-    	{
-    	    file_name = argv[1];
-            data_dir  = argv[2];
-            auth_key = argv[3];
-            input = argv[1];
-            cap.open(file_name);
-    	    break;
-    	}
         case 5:
-    	{
-    	    file_name = argv[1];
-    	    if (file_name.find("--capture") != std::string::npos)
+        {
+            std::string param = argv[1];
+            if (param.find("--batch") != std::string::npos)
     	    {
-    	    	cap.open(atoi(argv[2]));
-                is_capturing = true;
-                file_name = std::string("capture-") + argv[2] + ".csv";
-                input = argv[2];
+                std::string file = argv[2];
+                std::string line;
+                std::ifstream myfile (file.c_str());
+                if (myfile.is_open())
+                {
+                    while ( myfile.good() )
+                    {
+                        getline (myfile,line);
+                        batch_file.push_back(line);
+                    }
+                    myfile.close();
+                }
+                else
+                {
+                    std::cerr
+                    << "Could not open file "
+                    << file
+                    << std::endl;
+                    return -1;
+                }
+                batch_processing = true;
             }
             data_dir = argv[3];
             auth_key = argv[4];
+            file_number = 0;
+            num_files = (int)batch_file.size();
+            file_name = batch_file.at(file_number);
+            cap.open(file_name);
+            break;
+        }
+        case 7:
+    	{
+            file_prefix = argv[1];
+            file_number = atoi(argv[2]);
+            num_files = atoi(argv[3]);
+            file_suffix = argv[4];
+            data_dir  = argv[5];
+            auth_key = argv[6];
+            std::string file_number_str = argv[2];
+            file_name = file_prefix + file_number_str + file_suffix;
+            cap.open(file_name);
     	    break;
     	}
+
     	default:
     	{
-
-#ifdef HARDCODED_PARAMS
-        cap.open(1);
-	is_capturing = true;
-  #ifdef __APPLE__
-        //get path to Resource directory in OSX app bundle
-        CFBundleRef mainBundle;
-        mainBundle = CFBundleGetMainBundle();
-        CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-        CFURLRef dataURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault,
-                                 resourceURL,
-                                   CFSTR("data"),
-                                   true);
-        char buffer[1024];
-        if(CFURLGetFileSystemRepresentation(dataURL, true, (UInt8*)buffer, 1024)) {
-            //TODO: fix trailing slash not being appended automatically
-            data_dir = std::string(buffer) + "/";
-        }
-  #else
-        //same place as executable
-        data_dir = "./data/";
-  #endif
-        auth_key = "medusa123";
-#else
          std::cout
          << "Usage: "
          << argv[0]
-         << " <videofile> <data dir> <auth key>"
+         << " <videofileprefix> <firstfilenumber> <lastfilenumber> <videofilesuffix> <data dir> <auth key>"
          << std::endl;
          std::cout 
          << "       " 
          << argv[0]
-         << " --capture <camera-id> <data dir> <auth key>"
+         << " --batch <batchfile> <data dir> <auth key>"
          << std::endl;
          return -1;
-#endif
     	}
     }
 
     if(!cap.isOpened())  // check if we can capture from camera
     {
     	std::cerr 
-            << "Couldn't capture video from input "
-            << input
+            << "Could not open file "
+            << file_name
     	    << std::endl;
     	return -1;
     }
-    
-    QSettings *settings = InSight::settingsInstance();
-    cap.set(CV_CAP_PROP_FRAME_WIDTH,
-            settings->value("camera/reswidth").toInt());
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT,
-            settings->value("camera/resheight").toInt());
+    else{
+        std::cout << "Processing file: " << file_name << std::endl;
+    }
     
     InSight insight;
     if(!insight.authenticate(auth_key))
@@ -116,84 +111,146 @@ int main (int argc, char *argv[])
     }
     
     cv::namedWindow(HUMAN_NAME, CV_WINDOW_NORMAL);
-    cv::setWindowProperty(HUMAN_NAME, CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
-    // Initialize gaze-grid
-    cv::Mat camera, view, temp;
-    int pixel_width = settings->value("screen/reswidth").toInt(),
-        pixel_height = settings->value("screen/resheight").toInt();
-    view.create(cv::Size(pixel_width, pixel_height), CV_8UC3);
-    view.setTo(cv::Scalar(0,0,0));
-    cv::Rect roi(pixel_width-320,0,320,240);
-    std::vector<cv::Rect> sections(W*H);
-    float width = pixel_width/float(W);
-    float height = pixel_height/float(H);
-    std::cout << width << height << std::endl;
-    for (int i = 0; i < H; i++)
-    {
-        for (int j = 0; j < W; j++)
-        {
-            sections[i*W+j] =
-                    cv::Rect(j*width+BORDER,i*height+BORDER,width-BORDER,height-BORDER);
-            temp = view(sections[i*W+j]);
-            temp.setTo(cv::Scalar(255,255,255));
-        }
-    }
-    int prev_x = 0, prev_y = 0;
-    // Start indefinite loop and track eye gaze
+    cv::Mat frame, full_frame;
+    
+    // Start indefinite loop and process video
     for(;;)
     {
-        cap >> camera;
-
+        if(!cap.read(full_frame)){
+            //next movie
+            insight.reset();
+            frame_number = 0;
+            file_number++;
+            if(file_number < num_files)
+            {
+                if (batch_processing) {
+                    file_name = batch_file.at(file_number);
+                }   
+                else
+                {
+                    std::ostringstream o;
+                    o << file_number;
+                    file_name = file_prefix + o.str() + file_suffix;
+                }
+                cap.open(file_name);
+                if(!cap.isOpened() || !cap.read(full_frame))
+                {
+                    std::cerr 
+                    << "Could not open or read from file "
+                    << file_name
+                    << std::endl;
+                    return -1;
+                }
+                else
+                {
+                    std::cout << "Processing file: " << file_name << std::endl;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        //resize frame
+        cv::resize(full_frame,frame,cv::Size(640,480));
+        //full_frame.copyTo(frame);
     	if (!insight.isInit())
     	{
-            if(!insight.init(camera, data_dir))
+            if(!insight.init(frame, data_dir))
     	    {
     	    	std::cerr << insight.getError() << std::endl;
     	    }
+            else {
+                frame_number = 0;
+            }
     	    cvMoveWindow(HUMAN_NAME,0,0);
     	}
     	else
     	{
-            if(!insight.process(camera))
+            if(!insight.process(frame))
     	    {
     	    	std::cerr << insight.getError() << std::endl;
     	    }
             else
             {
-                cv::Point gaze;
-                if (insight.getEyeGaze(gaze))
+                //2D mask points
+                std::vector<cv::Point> mask_points;
+                if (!insight.getMaskPoints(mask_points))
                 {
-                    int x = gaze.x / width;
-                    int y = gaze.y / height;
-                  std::cout << gaze.x << " " << width << std::endl;
-                  std::cout << gaze.y << " " << height << std::endl;
-                    if (prev_x != x || prev_y != y)
-                    {
-                        temp = view(sections[prev_y*W+prev_x]);
-                        temp.setTo(cv::Scalar(255,255,255));
-                    }
-                    temp = view(sections.at(y*W+x));
-                    temp.setTo(cv::Scalar(255,0,0));
-                    prev_x = x;
-                    prev_y = y;
+                    std::cerr << insight.getError() << std::endl;
                 }
+                else
+                {
+                    //Draw mask points and write to file
+                    ofstream myfile;
+                    std::ostringstream o;
+                    o << frame_number;
+                    std::string outfile = "./" + file_name + "_2d_coord_fr_" + \
+                                          o.str() + ".txt";
+                    myfile.open (outfile.c_str());
+                    for (int i=0; i < (int)mask_points.size(); i++) 
+                    {
+                        cv::Point p = mask_points.at(i);
+                        cv::circle(frame, p, 1, cv::Scalar(0,255,0));
+                        //std::ostringstream o;
+                        //o << p.x << "," << p.y << std::endl;
+                        myfile << p.x << "," << p.y << std::endl;//o.str();
+                    }
+                    myfile.close();
+                }
+                
+                //Motion units
+                std::vector<float> motion_units;
+                if (!insight.getMotionUnits(motion_units))
+                {
+                    std::cerr << insight.getError() << std::endl;
+                }
+                else
+                {
+                    ofstream myfile;
+                    std::ostringstream o;
+                    o << frame_number;
+                    std::string outfile = "./" + file_name + "_m_units_fr_" + \
+                    o.str() + ".txt";
+                    myfile.open (outfile.c_str());
+                    for (int i=0; i < (int)motion_units.size(); i++) 
+                    {
+                        //std::ostringstream o;
+                        //o << motion_units.at(i);
+                        myfile << motion_units.at(i) << std::endl;//<< o.str() << "\n";
+                    }
+                    myfile.close();
+                }
+                    
+                //3D mask points
+                std::vector<cv::Point3f> mask_points_3d;
+                if (!insight.getMaskPoints3D(mask_points_3d))
+                {
+                    std::cerr << insight.getError() << std::endl;
+                }
+                else
+                {
+                    ofstream myfile;
+                    std::ostringstream o;
+                    o << frame_number;
+                    std::string outfile = "./" + file_name + "_3d_coord_fr_" + \
+                    o.str() + ".txt";
+                    myfile.open (outfile.c_str());
+                    for (int i=0; i < (int)mask_points_3d.size(); i++) 
+                    {
+                        //std::ostringstream o;
+                        //o << motion_units.at(i);
+                        cv::Point3f p = mask_points_3d.at(i);
+                        myfile << p.x << "," << p.y << "," << p.z << std::endl;//<< o.str() << "\n";
+                    }
+                    myfile.close();
+                }
+                frame_number++;
             }
     	}
 
-        if (is_capturing)
-        {
-            cv::flip(camera, camera, 1);
-        }
-        cv::resize(camera, temp, cv::Size(320,240));
-        camera = view(roi);
-        temp.copyTo(camera);
-        imshow(HUMAN_NAME, view);
-        char key = cv::waitKey(1);
-        if(key == 'q')
-    	{
-            std::cout << "Wrote output to " << file_name << std::endl;
-    	    break;
-    	}
+        imshow(HUMAN_NAME, frame);
     }
     return 0;
 }
