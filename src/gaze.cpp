@@ -183,7 +183,7 @@ int main (int argc, char *argv[])
                 else
                 {
                     //Draw mask points and write to file
-                    ofstream myfile;
+                    std::ofstream myfile;
                     std::ostringstream o;
                     o << frame_number;
                     std::string outfile = "./" + file_name + "_2d_coord_fr_" + \
@@ -208,7 +208,7 @@ int main (int argc, char *argv[])
                 }
                 else
                 {
-                    ofstream myfile;
+                    std::ofstream myfile;
                     std::ostringstream o;
                     o << frame_number;
                     std::string outfile = "./" + file_name + "_m_units_fr_" + \
@@ -231,7 +231,7 @@ int main (int argc, char *argv[])
                 }
                 else
                 {
-                    ofstream myfile;
+                    std::ofstream myfile;
                     std::ostringstream o;
                     o << frame_number;
                     std::string outfile = "./" + file_name + "_3d_coord_fr_" + \
