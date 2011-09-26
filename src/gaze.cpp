@@ -18,6 +18,8 @@
 #define H 9
 #define BORDER 2
 #define HARDCODED_PARAMS 1
+#define CAMVIEW_WIDTH 640
+#define CAMVIEW_HEIGHT 480
 
 int main (int argc, char *argv[])
 {
@@ -123,7 +125,7 @@ int main (int argc, char *argv[])
         pixel_height = settings->value("screen/resheight").toInt();
     view.create(cv::Size(pixel_width, pixel_height), CV_8UC3);
     view.setTo(cv::Scalar(0,0,0));
-    cv::Rect roi(pixel_width-320,0,320,240);
+    cv::Rect roi(pixel_width-CAMVIEW_WIDTH,0,CAMVIEW_WIDTH,CAMVIEW_HEIGHT);
     std::vector<cv::Rect> sections(W*H);
     float width = pixel_width/float(W);
     float height = pixel_height/float(H);
@@ -143,6 +145,10 @@ int main (int argc, char *argv[])
     for(;;)
     {
         cap >> camera;
+        if (is_capturing)
+        {
+            cv::flip(camera, camera, 1);
+        }
 
     	if (!insight.isInit())
     	{
@@ -191,14 +197,11 @@ int main (int argc, char *argv[])
                     temp.setTo(color);
                     prev_eye_gaze = eye_gaze;
                 }
+
+                insight.drawWireFace(camera);
             }
     	}
-
-        if (is_capturing)
-        {
-            cv::flip(camera, camera, 1);
-        }
-        cv::resize(camera, temp, cv::Size(320,240));
+        cv::resize(camera, temp, cv::Size(CAMVIEW_WIDTH,CAMVIEW_HEIGHT));
         camera = view(roi);
         temp.copyTo(camera);
         imshow(HUMAN_NAME, view);
