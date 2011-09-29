@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <time.h>
+#include <stdlib.h>
 
 #include <QSettings>
 
@@ -18,11 +20,15 @@
 #define H 9
 #define BORDER 2
 #define HARDCODED_PARAMS 1
-#define CAMVIEW_WIDTH 640
-#define CAMVIEW_HEIGHT 480
+#define CAMVIEW_WIDTH 320
+#define CAMVIEW_HEIGHT 240
+#define NUM_CALIBRATION_POINTS 5
+
+enum FSM { ERASE=0, DRAW=1, IDLE=2, ADD=3 };
 
 int main (int argc, char *argv[])
 {
+    srand( time(NULL) );
     cv::VideoCapture cap;
     std::string auth_key;
     std::string file_name;
@@ -141,6 +147,11 @@ int main (int argc, char *argv[])
     }
     cv::Point2i prev_head_gaze(0);
     cv::Point2i prev_eye_gaze(0);
+    int time = 0;
+    int timer = 0;
+    int calibration_points = 0;
+    FSM state = ERASE;
+    cv::Point2i calib_point(0);
     // Start indefinite loop and track eye gaze
     for(;;)
     {
@@ -148,6 +159,7 @@ int main (int argc, char *argv[])
         if (is_capturing)
         {
             cv::flip(camera, camera, 1);
+            cv::imwrite("test.jpg", camera);
         }
 
     	if (!insight.isInit())
@@ -166,44 +178,85 @@ int main (int argc, char *argv[])
     	    }
             else
             {
-                cv::Point2i head_gaze, eye_gaze;
-                if (insight.getHeadGaze(head_gaze))
+                if (calibration_points < NUM_CALIBRATION_POINTS)
                 {
-                    head_gaze = cv::Point2i(head_gaze.x / width, head_gaze.y / height);
-                    if (prev_head_gaze != head_gaze)
+                    switch (state)
                     {
-                        temp = view(sections[prev_head_gaze.y*W+prev_head_gaze.x]);
-                        temp.setTo(cv::Scalar(255,255,255));
+                    case ERASE: {
+                        cv::circle(view, calib_point, 1, cv::Scalar(255,255,255), 2);
+                        cv::circle(view, calib_point, 5, cv::Scalar(255,255,255), 2);
+                        cv::circle(view, calib_point, 10, cv::Scalar(255,255,255), 2);
+                        state = DRAW;
+                    } break;
+                    case DRAW: {
+                        calib_point.x = (rand() % W) * width + 15 + rand() % int(width-30);
+                        calib_point.y = (rand() % H) * height + 15 + rand() % int(height-30);
+                        cv::circle(view, calib_point, 1, cv::Scalar(0,0,255), 2);
+                        cv::circle(view, calib_point, 5, cv::Scalar(0,0,255), 2);
+                        cv::circle(view, calib_point, 10, cv::Scalar(0,0,255), 2);
+                        timer = time + 10;
+                        state = IDLE;
+                    } break;
+                    case IDLE: {
+                        if (time > timer)
+                        {
+                            state = ADD;
+                            timer = time + 5;
+                        }
+                    } break;
+                    case ADD: {
+                        if (time < timer)
+                            insight.addCalibrationPoint(calib_point);
+                        else
+                        {
+                            state = ERASE;
+                            calibration_points++;
+                        }
+                    } break;
+                    default: return -1;
                     }
-                    temp = view(sections.at(head_gaze.y*W+head_gaze.x));
-                    temp.setTo(cv::Scalar(255,0,0));
-                    prev_head_gaze = head_gaze;
                 }
-                if (insight.getEyeGaze(eye_gaze))
+                else
                 {
-                    eye_gaze = cv::Point2i(eye_gaze.x / width, eye_gaze.y / height);
-                    if (prev_eye_gaze != eye_gaze && prev_eye_gaze != head_gaze)
+                    cv::Point2i head_gaze, eye_gaze;
+                    if (insight.getHeadGaze(head_gaze))
                     {
-                        temp = view(sections[prev_eye_gaze.y*W+prev_eye_gaze.x]);
-                        temp.setTo(cv::Scalar(255,255,255));
+                        head_gaze = cv::Point2i(head_gaze.x / width, head_gaze.y / height);
+                        if (prev_head_gaze != head_gaze)
+                        {
+                            temp = view(sections[prev_head_gaze.y*W+prev_head_gaze.x]);
+                            temp.setTo(cv::Scalar(255,255,255));
+                        }
+                        temp = view(sections.at(head_gaze.y*W+head_gaze.x));
+                        temp.setTo(cv::Scalar(255,0,0));
+                        prev_head_gaze = head_gaze;
                     }
+                    if (insight.getEyeGaze(eye_gaze))
+                    {
+                        std::cout << "EYE_GAZE (" << eye_gaze.x << ", " << eye_gaze.y << ")" << std::endl;
+                        eye_gaze = cv::Point2i(eye_gaze.x / width, eye_gaze.y / height);
+                        if (prev_eye_gaze != eye_gaze && prev_eye_gaze != head_gaze)
+                        {
+                            temp = view(sections[prev_eye_gaze.y*W+prev_eye_gaze.x]);
+                            temp.setTo(cv::Scalar(255,255,255));
+                        }
 
-                    temp = view(sections.at(eye_gaze.y*W+eye_gaze.x));
-                    cv::Scalar color(0,0,255);
-                    if (eye_gaze == head_gaze)
-                    {
-                        color = cv::Scalar(128,0,128);
+                        temp = view(sections.at(eye_gaze.y*W+eye_gaze.x));
+                        cv::Scalar color(0,0,255);
+                        if (eye_gaze == head_gaze)
+                        {
+                            color = cv::Scalar(128,0,128);
+                        }
+                        temp.setTo(color);
+                        prev_eye_gaze = eye_gaze;
                     }
-                    temp.setTo(color);
-                    prev_eye_gaze = eye_gaze;
+                    insight.drawWireFace(camera);
+                    cv::resize(camera, temp, cv::Size(CAMVIEW_WIDTH,CAMVIEW_HEIGHT));
+                    camera = view(roi);
+                    temp.copyTo(camera);
                 }
-
-                insight.drawWireFace(camera);
             }
     	}
-        cv::resize(camera, temp, cv::Size(CAMVIEW_WIDTH,CAMVIEW_HEIGHT));
-        camera = view(roi);
-        temp.copyTo(camera);
         imshow(HUMAN_NAME, view);
         char key = cv::waitKey(1);
         if(key == 'q')
@@ -211,6 +264,7 @@ int main (int argc, char *argv[])
             std::cout << "Wrote output to " << file_name << std::endl;
     	    break;
     	}
+        time++;
     }
     return 0;
 }
