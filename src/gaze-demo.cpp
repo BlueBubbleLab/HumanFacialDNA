@@ -35,11 +35,16 @@ void drawPoint(cv::Mat& inCanvas, const cv::Point2i& inPos, const cv::Scalar& in
 int main (int argc, char *argv[])
 {
     std::vector<cv::Point2i> calibration_points;
-    calibration_points.push_back(cv::Point2i(W/2, H/2));
     calibration_points.push_back(cv::Point2i(0, 0));
+    calibration_points.push_back(cv::Point2i(W/2, 0));
     calibration_points.push_back(cv::Point2i(W-1, 0));
+    calibration_points.push_back(cv::Point2i(W-1, H/2));
     calibration_points.push_back(cv::Point2i(W-1, H-1));
+    calibration_points.push_back(cv::Point2i(W/2, H-1));
     calibration_points.push_back(cv::Point2i(0, H-1));
+    calibration_points.push_back(cv::Point2i(0, H/2));
+    calibration_points.push_back(cv::Point2i(W/2, H/2));
+
 
     srand( time(NULL) );
     cv::VideoCapture cap;
@@ -203,7 +208,7 @@ int main (int argc, char *argv[])
                         calib_point.x = calibration_points[num_point].x * width + width/2;
                         calib_point.y = calibration_points[num_point].y * height + height/2;
                         drawPoint(view, calib_point, cv::Scalar(0,0,255));
-                        timer = time + 15;
+                        timer = time + 10;
                         state = IDLE;
                     } break;
                     case IDLE: {
