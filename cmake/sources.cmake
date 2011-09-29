@@ -15,7 +15,7 @@ QT4_WRAP_CPP(GAZE_DEMO_QT_CPP
 SET(GAZE_DEMO_SOURCE
     ${GAZE_DEMO_QT_UI}
     ${GAZE_DEMO_QT_CPP}
-    src/gaze.cpp
+    src/gaze-demo.cpp
 )
 
 #-------------------------------------------------------------------------------
