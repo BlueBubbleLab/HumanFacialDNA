@@ -22,12 +22,24 @@
 #define HARDCODED_PARAMS 1
 #define CAMVIEW_WIDTH 320
 #define CAMVIEW_HEIGHT 240
-#define NUM_CALIBRATION_POINTS 5
 
 enum FSM { ERASE=0, DRAW=1, IDLE=2, ADD=3 };
 
+void drawPoint(cv::Mat& inCanvas, const cv::Point2i& inPos, const cv::Scalar& inColor)
+{
+    cv::circle(inCanvas, inPos, 2, inColor, 2);
+    cv::circle(inCanvas, inPos, 7, inColor, 2);
+    cv::circle(inCanvas, inPos, 12, inColor, 2);
+}
+
 int main (int argc, char *argv[])
 {
+    std::vector<cv::Point2i> calibration_points;
+    for (int j = 0; j < H; j++)
+        for (int i = 0; i < W; i++)
+            if ((i <= 0 || i >= W-1) && (j <= 0 || j >= H-1))
+                calibration_points.push_back(cv::Point2i(i,j));
+
     srand( time(NULL) );
     cv::VideoCapture cap;
     std::string auth_key;
@@ -149,7 +161,7 @@ int main (int argc, char *argv[])
     cv::Point2i prev_eye_gaze(0);
     int time = 0;
     int timer = 0;
-    int calibration_points = 0;
+    unsigned int num_calibration_points = 0;
     FSM state = ERASE;
     cv::Point2i calib_point(0);
     // Start indefinite loop and track eye gaze
@@ -178,22 +190,18 @@ int main (int argc, char *argv[])
     	    }
             else
             {
-                if (calibration_points < NUM_CALIBRATION_POINTS)
+                if (num_calibration_points < calibration_points.size())
                 {
                     switch (state)
                     {
                     case ERASE: {
-                        cv::circle(view, calib_point, 1, cv::Scalar(255,255,255), 2);
-                        cv::circle(view, calib_point, 5, cv::Scalar(255,255,255), 2);
-                        cv::circle(view, calib_point, 10, cv::Scalar(255,255,255), 2);
+                        drawPoint(view, calib_point, cv::Scalar(255,255,255));
                         state = DRAW;
                     } break;
                     case DRAW: {
-                        calib_point.x = (rand() % W) * width + 15 + rand() % int(width-30);
-                        calib_point.y = (rand() % H) * height + 15 + rand() % int(height-30);
-                        cv::circle(view, calib_point, 1, cv::Scalar(0,0,255), 2);
-                        cv::circle(view, calib_point, 5, cv::Scalar(0,0,255), 2);
-                        cv::circle(view, calib_point, 10, cv::Scalar(0,0,255), 2);
+                        calib_point.x = calibration_points[num_calibration_points].x * width + width/2;
+                        calib_point.y = calibration_points[num_calibration_points].y * height + height/2;
+                        drawPoint(view, calib_point, cv::Scalar(0,0,255));
                         timer = time + 10;
                         state = IDLE;
                     } break;
@@ -210,11 +218,13 @@ int main (int argc, char *argv[])
                         else
                         {
                             state = ERASE;
-                            calibration_points++;
+                            num_calibration_points++;
                         }
                     } break;
                     default: return -1;
                     }
+                    if (num_calibration_points == calibration_points.size())
+                        insight.calibrate();
                 }
                 else
                 {
@@ -233,7 +243,6 @@ int main (int argc, char *argv[])
                     }
                     if (insight.getEyeGaze(eye_gaze))
                     {
-                        std::cout << "EYE_GAZE (" << eye_gaze.x << ", " << eye_gaze.y << ")" << std::endl;
                         eye_gaze = cv::Point2i(eye_gaze.x / width, eye_gaze.y / height);
                         if (prev_eye_gaze != eye_gaze && prev_eye_gaze != head_gaze)
                         {
@@ -260,10 +269,7 @@ int main (int argc, char *argv[])
         imshow(HUMAN_NAME, view);
         char key = cv::waitKey(1);
         if(key == 'q')
-    	{
-            std::cout << "Wrote output to " << file_name << std::endl;
     	    break;
-    	}
         time++;
     }
     return 0;
