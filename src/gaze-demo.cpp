@@ -16,8 +16,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#define W 12
-#define H 9
+#define W 11
+#define H 7
 #define BORDER 2
 #define HARDCODED_PARAMS 1
 #define CAMVIEW_WIDTH 320
@@ -35,10 +35,11 @@ void drawPoint(cv::Mat& inCanvas, const cv::Point2i& inPos, const cv::Scalar& in
 int main (int argc, char *argv[])
 {
     std::vector<cv::Point2i> calibration_points;
-    for (int j = 0; j < H; j++)
-        for (int i = 0; i < W; i++)
-            if ((i <= 0 || i >= W-1) && (j <= 0 || j >= H-1))
-                calibration_points.push_back(cv::Point2i(i,j));
+    calibration_points.push_back(cv::Point2i(W/2, H/2));
+    calibration_points.push_back(cv::Point2i(0, 0));
+    calibration_points.push_back(cv::Point2i(W-1, 0));
+    calibration_points.push_back(cv::Point2i(W-1, H-1));
+    calibration_points.push_back(cv::Point2i(0, H-1));
 
     srand( time(NULL) );
     cv::VideoCapture cap;
@@ -50,34 +51,34 @@ int main (int argc, char *argv[])
     switch (argc)
     {
         case 4:
-    	{
-    	    file_name = argv[1];
+        {
+            file_name = argv[1];
             data_dir  = argv[2];
             auth_key = argv[3];
             input = argv[1];
             cap.open(file_name);
-    	    break;
-    	}
+            break;
+        }
         case 5:
-    	{
-    	    file_name = argv[1];
-    	    if (file_name.find("--capture") != std::string::npos)
-    	    {
-    	    	cap.open(atoi(argv[2]));
+        {
+            file_name = argv[1];
+            if (file_name.find("--capture") != std::string::npos)
+            {
+                cap.open(atoi(argv[2]));
                 is_capturing = true;
                 file_name = std::string("capture-") + argv[2] + ".csv";
                 input = argv[2];
             }
             data_dir = argv[3];
             auth_key = argv[4];
-    	    break;
-    	}
-    	default:
-    	{
+            break;
+        }
+        default:
+        {
 
 #ifdef HARDCODED_PARAMS
         cap.open(1);
-	is_capturing = true;
+        is_capturing = true;
   #ifdef __APPLE__
         //get path to Resource directory in OSX app bundle
         CFBundleRef mainBundle;
@@ -103,14 +104,14 @@ int main (int argc, char *argv[])
          << argv[0]
          << " <videofile> <data dir> <auth key>"
          << std::endl;
-         std::cout 
-         << "       " 
+         std::cout
+         << "       "
          << argv[0]
          << " --capture <camera-id> <data dir> <auth key>"
          << std::endl;
          return -1;
 #endif
-    	}
+        }
     }
 
     if(!cap.isOpened())  // check if we can capture from camera
@@ -118,7 +119,7 @@ int main (int argc, char *argv[])
     	std::cerr 
             << "Couldn't capture video from input "
             << input
-    	    << std::endl;
+            << std::endl;
     	return -1;
     }
     
@@ -161,7 +162,7 @@ int main (int argc, char *argv[])
     cv::Point2i prev_eye_gaze(0);
     int time = 0;
     int timer = 0;
-    unsigned int num_calibration_points = 0;
+    unsigned int num_point = 0;
     FSM state = ERASE;
     cv::Point2i calib_point(0);
     // Start indefinite loop and track eye gaze
@@ -177,20 +178,20 @@ int main (int argc, char *argv[])
     	if (!insight.isInit())
     	{
             if(!insight.init(camera, data_dir))
-    	    {
-    	    	std::cerr << insight.getError() << std::endl;
-    	    }
-    	    cvMoveWindow(HUMAN_NAME,0,0);
+            {
+                std::cerr << insight.getError() << std::endl;
+            }
+            cvMoveWindow(HUMAN_NAME,0,0);
     	}
     	else
     	{
             if(!insight.process(camera))
-    	    {
-    	    	std::cerr << insight.getError() << std::endl;
-    	    }
+            {
+                std::cerr << insight.getError() << std::endl;
+            }
             else
             {
-                if (num_calibration_points < calibration_points.size())
+                if (num_point < calibration_points.size())
                 {
                     switch (state)
                     {
@@ -199,17 +200,17 @@ int main (int argc, char *argv[])
                         state = DRAW;
                     } break;
                     case DRAW: {
-                        calib_point.x = calibration_points[num_calibration_points].x * width + width/2;
-                        calib_point.y = calibration_points[num_calibration_points].y * height + height/2;
+                        calib_point.x = calibration_points[num_point].x * width + width/2;
+                        calib_point.y = calibration_points[num_point].y * height + height/2;
                         drawPoint(view, calib_point, cv::Scalar(0,0,255));
-                        timer = time + 10;
+                        timer = time + 15;
                         state = IDLE;
                     } break;
                     case IDLE: {
                         if (time > timer)
                         {
                             state = ADD;
-                            timer = time + 5;
+                            timer = time + 2;
                         }
                     } break;
                     case ADD: {
@@ -218,12 +219,12 @@ int main (int argc, char *argv[])
                         else
                         {
                             state = ERASE;
-                            num_calibration_points++;
+                            num_point++;
                         }
                     } break;
                     default: return -1;
                     }
-                    if (num_calibration_points == calibration_points.size())
+                    if (num_point == calibration_points.size())
                         insight.calibrate();
                 }
                 else
