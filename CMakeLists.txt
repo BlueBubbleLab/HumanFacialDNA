@@ -88,7 +88,6 @@ FILE(COPY ${INSIGHT_SOURCE_DIR}/data DESTINATION ${INSIGHT_DEMO_BINARY_DIR})
 #-------------------------------------------------------------------------------
 INCLUDE_DIRECTORIES(
     ${QT_INCLUDE_DIR}
-    ${QWT_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIR}
 )
 
