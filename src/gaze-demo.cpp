@@ -172,112 +172,120 @@ int main (int argc, char *argv[])
     unsigned int num_point = 0;
     FSM state = ERASE;
     cv::Point2i calib_point(0);
+    bool is_ready = false;
     // Start indefinite loop and track eye gaze
     for(;;)
     {
         cap >> camera;
+
         if (is_capturing)
         {
             cv::flip(camera, camera, 1);
-            cv::imwrite("test.jpg", camera);
         }
 
-    	if (!insight.isInit())
-    	{
-            if(!insight.init(camera, data_dir))
+        if (is_ready)
+        {
+            if (!insight.isInit())
             {
-                std::cerr << insight.getError() << std::endl;
-            }
-            cvMoveWindow(HUMAN_NAME,0,0);
-    	}
-    	else
-    	{
-            if(!insight.process(camera))
-            {
-                std::cerr << insight.getError() << std::endl;
+                if(!insight.init(camera, data_dir))
+                {
+                    std::cerr << insight.getError() << std::endl;
+                }
+                cvMoveWindow(HUMAN_NAME,0,0);
             }
             else
             {
-                if (num_point < calibration_points.size())
+                if(!insight.process(camera))
                 {
-                    switch (state)
-                    {
-                    case ERASE: {
-                        drawPoint(view, calib_point, cv::Scalar(255,255,255));
-                        state = DRAW;
-                    } break;
-                    case DRAW: {
-                        calib_point.x = calibration_points[num_point].x * width + width/2;
-                        calib_point.y = calibration_points[num_point].y * height + height/2;
-                        drawPoint(view, calib_point, cv::Scalar(0,0,255));
-                        timer = time + 25;
-                        state = IDLE;
-                    } break;
-                    case IDLE: {
-                        if (time > timer)
-                        {
-                            state = ADD;
-                            timer = time + 2;
-                        }
-                    } break;
-                    case ADD: {
-                        if (time < timer)
-                            insight.addCalibrationPoint(calib_point);
-                        else
-                        {
-                            state = ERASE;
-                            num_point++;
-                        }
-                    } break;
-                    default: return -1;
-                    }
-                    if (num_point == calibration_points.size())
-                        insight.calibrate();
+                    std::cerr << insight.getError() << std::endl;
                 }
                 else
                 {
-                    cv::Point2i head_gaze, eye_gaze;
-                    if (insight.getHeadGaze(head_gaze))
+                    if (num_point < calibration_points.size())
                     {
-                        head_gaze = cv::Point2i(head_gaze.x / width, head_gaze.y / height);
-                        if (prev_head_gaze != head_gaze)
+                        switch (state)
                         {
-                            temp = view(sections[prev_head_gaze.y*W+prev_head_gaze.x]);
-                            temp.setTo(cv::Scalar(255,255,255));
+                        case ERASE: {
+                            drawPoint(view, calib_point, cv::Scalar(255,255,255));
+                            state = DRAW;
+                        } break;
+                        case DRAW: {
+                            calib_point.x = calibration_points[num_point].x * width + width/2;
+                            calib_point.y = calibration_points[num_point].y * height + height/2;
+                            drawPoint(view, calib_point, cv::Scalar(0,0,255));
+                            timer = time + 10;
+                            state = IDLE;
+                        } break;
+                        case IDLE: {
+                            if (time > timer)
+                            {
+                                state = ADD;
+                                timer = time + 2;
+                            }
+                        } break;
+                        case ADD: {
+                            if (time < timer)
+                                insight.addCalibrationPoint(calib_point);
+                            else
+                            {
+                                state = ERASE;
+                                num_point++;
+                            }
+                        } break;
+                        default: return -1;
                         }
-                        temp = view(sections.at(head_gaze.y*W+head_gaze.x));
-                        temp.setTo(cv::Scalar(255,0,0));
-                        prev_head_gaze = head_gaze;
+                        if (num_point == calibration_points.size())
+                            insight.calibrate();
                     }
-                    if (insight.getEyeGaze(eye_gaze))
+                    else
                     {
-                        eye_gaze = cv::Point2i(eye_gaze.x / width, eye_gaze.y / height);
-                        if (prev_eye_gaze != eye_gaze && prev_eye_gaze != head_gaze)
+                        cv::Point2i head_gaze, eye_gaze;
+                        if (insight.getHeadGaze(head_gaze))
                         {
-                            temp = view(sections[prev_eye_gaze.y*W+prev_eye_gaze.x]);
-                            temp.setTo(cv::Scalar(255,255,255));
+                            head_gaze = cv::Point2i(head_gaze.x / width, head_gaze.y / height);
+                            if (prev_head_gaze != head_gaze)
+                            {
+                                temp = view(sections[prev_head_gaze.y*W+prev_head_gaze.x]);
+                                temp.setTo(cv::Scalar(255,255,255));
+                            }
+                            temp = view(sections.at(head_gaze.y*W+head_gaze.x));
+                            temp.setTo(cv::Scalar(255,0,0));
+                            prev_head_gaze = head_gaze;
                         }
+                        if (insight.getEyeGaze(eye_gaze))
+                        {
+                            eye_gaze = cv::Point2i(eye_gaze.x / width, eye_gaze.y / height);
+                            if (prev_eye_gaze != eye_gaze && prev_eye_gaze != head_gaze)
+                            {
+                                temp = view(sections[prev_eye_gaze.y*W+prev_eye_gaze.x]);
+                                temp.setTo(cv::Scalar(255,255,255));
+                            }
 
-                        temp = view(sections.at(eye_gaze.y*W+eye_gaze.x));
-                        cv::Scalar color(0,0,255);
-                        if (eye_gaze == head_gaze)
-                        {
-                            color = cv::Scalar(128,0,128);
+                            temp = view(sections.at(eye_gaze.y*W+eye_gaze.x));
+                            cv::Scalar color(0,0,255);
+                            if (eye_gaze == head_gaze)
+                            {
+                                color = cv::Scalar(128,0,128);
+                            }
+                            temp.setTo(color);
+                            prev_eye_gaze = eye_gaze;
                         }
-                        temp.setTo(color);
-                        prev_eye_gaze = eye_gaze;
+                        insight.drawWireFace(camera);
+                        cv::resize(camera, temp, cv::Size(CAMVIEW_WIDTH,CAMVIEW_HEIGHT));
+                        camera = view(roi);
+                        temp.copyTo(camera);
                     }
-                    insight.drawWireFace(camera);
-                    cv::resize(camera, temp, cv::Size(CAMVIEW_WIDTH,CAMVIEW_HEIGHT));
-                    camera = view(roi);
-                    temp.copyTo(camera);
                 }
             }
-    	}
+        }
         imshow(HUMAN_NAME, view);
         char key = cv::waitKey(1);
-        if(key == 'q')
-    	    break;
+        switch (key)
+        {
+        case 'q': return 0;
+        case 's': is_ready = true; break;
+        default: break;
+        }
         time++;
     }
     return 0;
