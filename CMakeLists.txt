@@ -12,6 +12,34 @@ SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
 SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DDEBUG")
 
 #-------------------------------------------------------------------------------
+# Platform specific settings Settings
+#-------------------------------------------------------------------------------
+IF (APPLE)
+    IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        MESSAGE(STATUS " Compiling for OSX")
+        SET(OSX ON)
+    ELSE ()
+        MESSAGE(STATUS " Compiling for IOS")
+        SET(IOS ON)
+    ENDIF ()
+ENDIF ()
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    MESSAGE(STATUS " Compiling for Linux")
+    SET(LINUX ON)
+ENDIF()
+
+IF (MINGW)
+    MESSAGE(STATUS " Compiling for Windows with MinGW")
+    SET(COMPILER "mingw")
+ENDIF ()
+
+IF (MSVC)
+    MESSAGE(STATUS " Compiling for Windows with Visual Studio")
+    SET(COMPILER "vs2010")
+ENDIF ()
+
+#-------------------------------------------------------------------------------
 # Extract and set the version
 #-------------------------------------------------------------------------------
 EXECUTE_PROCESS(
@@ -67,11 +95,59 @@ INCLUDE_DIRECTORIES(
 #-------------------------------------------------------------------------------
 # Add executables and link libraries
 #-------------------------------------------------------------------------------
-ADD_EXECUTABLE(${TARGET_GAZE_DEMO} ${GAZE_DEMO_SOURCE})
+IF(OSX)
+    ADD_EXECUTABLE(${TARGET_GAZE_DEMO} MACOSX_BUNDLE ${GAZE_DEMO_SOURCE})
+ELSE(OSX)
+    ADD_EXECUTABLE(${TARGET_GAZE_DEMO} ${GAZE_DEMO_SOURCE})
+ENDIF(OSX)
+
 TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
     insight
     ${QT_LIBRARIES}
     ${QT_QTMAIN_LIBRARY}
     ${OpenCV_LIBS}
-    ${QWT_LIBRARIES}
 )
+
+#-------------------------------------------------------------------------------
+# OSX devel example bundle
+#-------------------------------------------------------------------------------
+IF (OSX)
+    INSTALL(TARGETS ${TARGET_GAZE_DEMO} BUNDLE DESTINATION . COMPONENT Runtime)
+
+    # Install resources and set icon
+    INSTALL(FILES "${INSIGHT_DEMO_SOURCE_DIR}/resources/icons/thirdsight.icns" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+    INSTALL(DIRECTORY "${INSIGHT_SOURCE_DIR}/data" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+
+    # Set aliases for plugin and resource dir
+    SET(plugin_dest_dir ${TARGET_GAZE_DEMO}.app/Contents/MacOS)
+    SET(qtconf_dest_dir ${TARGET_GAZE_DEMO}.app/Contents/Resources)
+
+    # Install qt plugins
+    INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+    #INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/phonon_backend" DESTINATION ${plugin_dest_dir}/plugins COMPOENT Runtime)
+
+    # Install qt.conf
+    INSTALL(CODE "
+    FILE(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"[Paths]\nPlugins = MacOS/plugins\")" COMPONENT Runtime)
+
+    # Set insight dependency directory
+    SET(DIRS ${CMAKE_CURRENT_BINARY_DIR}/insight/)
+
+
+    INSTALL(CODE "
+file(GLOB_RECURSE QTPLUGINS
+\"\${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+            include(BundleUtilities)
+            SET(BU_CHMOD_BUNDLE_ITEMS ON)
+            fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app\" \"\${QTPLUGINS}\" \"${DIRS}\")
+            " COMPONENT Runtime)
+
+SET(MACOSX_BUNDLE_ICON_FILE thirdsight.icns)
+SET(MACOSX_BUNDLE_BUNDLE_NAME "${TARGET_GAZE_DEMO}")
+SET(MACOSX_BUNDLE_INFO_STRING "${TARGET_GAZE_DEMO} "${VERSION})
+SET(MACOSX_BUNDLE_GUI_IDENTIFIER "com.ThirdSight.${TARGET_GAZE_DEMO}" )
+SET(MACOSX_BUNDLE_BUNDLE_VERSION ${VERSION})
+SET(MACOSX_BUNDLE_LONG_VERSION_STRING ${VERSION})
+SET(MACOSX_BUNDLE_COPYRIGHT "Copyright 2011 ThirdSight B.V. All Rights Reserved")
+
+ENDIF(OSX)

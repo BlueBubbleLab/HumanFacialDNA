@@ -82,9 +82,10 @@ int main (int argc, char *argv[])
         {
 
 #ifdef HARDCODED_PARAMS
-        cap.open(1);
+        cap.open(0);
         is_capturing = true;
   #ifdef __APPLE__
+            
         //get path to Resource directory in OSX app bundle
         CFBundleRef mainBundle;
         mainBundle = CFBundleGetMainBundle();
@@ -98,6 +99,7 @@ int main (int argc, char *argv[])
             //TODO: fix trailing slash not being appended automatically
             data_dir = std::string(buffer) + "/";
         }
+             
   #else
         //same place as executable
         data_dir = "./data/";
@@ -208,7 +210,7 @@ int main (int argc, char *argv[])
                         calib_point.x = calibration_points[num_point].x * width + width/2;
                         calib_point.y = calibration_points[num_point].y * height + height/2;
                         drawPoint(view, calib_point, cv::Scalar(0,0,255));
-                        timer = time + 10;
+                        timer = time + 25;
                         state = IDLE;
                     } break;
                     case IDLE: {
