@@ -39,7 +39,10 @@ int main (int argc, char *argv[])
                     while ( myfile.good() )
                     {
                         getline (myfile,line);
-                        batch_file.push_back(line);
+                        if (myfile.good())
+                        {
+                            batch_file.push_back(line);
+                        }
                     }
                     myfile.close();
                 }
@@ -59,6 +62,8 @@ int main (int argc, char *argv[])
             num_files = (int)batch_file.size();
             file_name = batch_file.at(file_number);
             cap.open(file_name);
+            std::cout << std::endl << " Files in batch: " << 
+            num_files << std::endl << std::endl;
             break;
         }
         case 7:
@@ -143,7 +148,8 @@ int main (int argc, char *argv[])
                 }
                 else
                 {
-                    std::cout << "Processing file: " << file_name << std::endl;
+                    std::cout << std::endl << "Processing file: " << file_name 
+                    << std::endl << std::endl;
                 }
             }
             else
