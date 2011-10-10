@@ -158,9 +158,16 @@ int main (int argc, char *argv[])
             }
         }
         
-        //resize frame
-        cv::resize(full_frame,frame,cv::Size(640,480));
-        //full_frame.copyTo(frame);
+        //crop frame to match aspect ratio to 4:3
+        int new_width = full_frame.cols;
+        if(full_frame.cols/(float)full_frame.rows > 640/480.0f)
+        {
+            new_width = 640/480.f * full_frame.rows;
+        }
+        //resize to 640x480
+        cv::resize(full_frame(cv::Rect(0,0,new_width,full_frame.rows)),
+                   frame,cv::Size(640,480));
+        //full_frame(cv::Rect(0,0,1440,1080)).copyTo(frame);
     	if (!insight.isInit())
     	{
             if(!insight.init(frame, data_dir))
