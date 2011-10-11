@@ -253,8 +253,15 @@ int main (int argc, char *argv[])
                 frame_number++;
             }
     	}
-
-        imshow(HUMAN_NAME, frame);
+      //Show a x768 height output
+      cv::Mat small_frame;
+      int width = 1024;
+      int height = 768;
+      if(frame.cols/(float)frame.rows > width/(float)height){
+        width = frame.cols/(float)frame.rows * height;
+      }
+      cv::resize(frame,small_frame,cv::Size(width,height));
+      imshow(HUMAN_NAME, small_frame);
     }
     return 0;
 }
