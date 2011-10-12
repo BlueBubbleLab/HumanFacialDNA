@@ -157,8 +157,16 @@ int main (int argc, char *argv[])
                 break;
             }
         }
-        
-      full_frame.copyTo(frame); //use this in case you want to crop or resize
+	//Resize frame to 640x480 and add black bar on the bottom if necessary
+	int fw = 640;
+	int fh = 480;
+	if(full_frame.cols/(float)full_frame.rows > fw/(float)fh){
+	  //Add black bars on the bottom bottom
+	  fh = cvRound(full_frame.rows/(float)full_frame.cols*fw);
+	}
+	frame = cv::Mat::ones(480,640,full_frame.type());
+	cv::Mat frame_roi = frame(cv::Rect(0,0,fw,fh));
+        cv::resize(full_frame,frame_roi,cv::Size(fw,fh));
     	if (!insight.isInit())
     	{
             if(!insight.init(frame, data_dir))
@@ -196,7 +204,7 @@ int main (int argc, char *argv[])
                     for (int i=0; i < (int)mask_points.size(); i++) 
                     {
                         cv::Point p = mask_points.at(i);
-                        cv::circle(frame, p, 1, cv::Scalar(0,255,0));
+                        cv::circle(frame, p, 0, cv::Scalar(0,255,0));
                         //std::ostringstream o;
                         //o << p.x << "," << p.y << std::endl;
                         myfile << p.x << "," << p.y << std::endl;//o.str();
