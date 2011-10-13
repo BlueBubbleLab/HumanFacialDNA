@@ -36,8 +36,48 @@ CONFIGURE_FILE(
 # Find 3rd party packages and include macros
 #-------------------------------------------------------------------------------
 FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
-FIND_PACKAGE(OpenCV REQUIRED)
-FIND_PACKAGE(QWT REQUIRED)
+
+
+IF (WIN32)
+    SET(WINBIN "${CMAKE_CURRENT_SOURCE_DIR}/../winbin" CACHE PATH
+        "Location of the WINBIN git repository")
+    IF(NOT EXISTS ${WINBIN})
+        MESSAGE(ERROR
+            "${WINBIN} doesn't exists, please set WINBIN to ThirdSight WINBIN project")
+    ELSE()
+        SET(CMAKE_MODULE_PATH "${WINBIN}/cmake/")
+        INCLUDE(winbin)
+    ENDIF()
+
+    LINK_DIRECTORIES(
+        ${BLAS_LIB_DIR}
+        ${OpenCV_LIB_DIR}
+        ${GLEW_LIB_DIR}
+        ${GLUT_LIB_DIR}
+        ${GSL_LIB_DIR}
+        ${JPEG_LIB_DIR}
+        ${GTEST_LIB_DIR}
+    )
+
+	IF (DEBUG)
+	    SET(QT_DLL_FILES
+        ${QT_BINARY_DIR}/QtCored4.dll
+        ${QT_BINARY_DIR}/QtNetworkd4.dll
+        ${QT_BINARY_DIR}/libeay32.dll
+        ${QT_BINARY_DIR}/ssleay32.dll
+		)
+	ELSE (DEBUG)
+	    SET(QT_DLL_FILES
+        ${QT_BINARY_DIR}/QtCore4.dll
+        ${QT_BINARY_DIR}/QtNetwork4.dll
+        ${QT_BINARY_DIR}/libeay32.dll
+        ${QT_BINARY_DIR}/ssleay32.dll
+		)
+	ENDIF (DEBUG)
+    
+ELSE (WIN32)
+    FIND_PACKAGE(OpenCV REQUIRED)
+ENDIF (WIN32)
 
 #-------------------------------------------------------------------------------
 # Include sources
@@ -60,7 +100,6 @@ FILE(COPY ${INSIGHT_SOURCE_DIR}/data DESTINATION ${INSIGHT_DEMO_BINARY_DIR})
 #-------------------------------------------------------------------------------
 INCLUDE_DIRECTORIES(
     ${QT_INCLUDE_DIR}
-    ${QWT_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIR}
 )
 
@@ -73,5 +112,4 @@ TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
     ${QT_LIBRARIES}
     ${QT_QTMAIN_LIBRARY}
     ${OpenCV_LIBS}
-    ${QWT_LIBRARIES}
 )

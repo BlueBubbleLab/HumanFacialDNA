@@ -21,7 +21,7 @@ int main (int argc, char *argv[])
     std::vector<std::string> batch_file;
     int file_number;
     int num_files;
-    int frame_number;
+    int frame_number = 0;
     bool batch_processing = false;
     std::string data_dir = "../data/";
     switch (argc)
@@ -115,7 +115,7 @@ int main (int argc, char *argv[])
     	return -1;
     }
     
-    cv::namedWindow(HUMAN_NAME, CV_WINDOW_NORMAL);
+    cv::namedWindow(HUMAN_NAME);
     cv::Mat frame, full_frame;
     
     // Start indefinite loop and process video
@@ -262,6 +262,7 @@ int main (int argc, char *argv[])
       }
       cv::resize(frame,small_frame,cv::Size(width,height));
       imshow(HUMAN_NAME, small_frame);
+      cv::waitKey(1);
     }
     return 0;
 }
