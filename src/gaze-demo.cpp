@@ -136,7 +136,7 @@ int main (int argc, char *argv[])
     cap.set(CV_CAP_PROP_FRAME_HEIGHT,
             settings->value("camera/resheight").toInt());
     
-    InSight insight;
+    InSight insight(data_dir);
     if(!insight.authenticate(auth_key))
     {
     	std::cerr << insight.getError() << std::endl;
@@ -187,7 +187,7 @@ int main (int argc, char *argv[])
         {
             if (!insight.isInit())
             {
-                if(!insight.init(camera, data_dir))
+                if(!insight.init(camera))
                 {
                     std::cerr << insight.getError() << std::endl;
                 }
