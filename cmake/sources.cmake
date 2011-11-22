@@ -4,12 +4,12 @@
 SET(TARGET_GAZE_DEMO "gaze-demo")
 
 # Add gui forms here
-QT4_WRAP_UI(GAZE_DEMO_QT_UI
-)
+#QT4_WRAP_UI(GAZE_DEMO_QT_UI
+#)
 
 # Add qt4 related header files here
-QT4_WRAP_CPP(GAZE_DEMO_QT_CPP
-)
+#QT4_WRAP_CPP(GAZE_DEMO_QT_CPP
+#)
 
 # Add regular cpp files here
 SET(GAZE_DEMO_SOURCE
@@ -24,12 +24,12 @@ SET(GAZE_DEMO_SOURCE
 SET(TARGET_FACE_DEMO "face-demo")
 
 # Add gui forms here
-QT4_WRAP_UI(FACE_DEMO_QT_UI
-)
+#QT4_WRAP_UI(FACE_DEMO_QT_UI
+#)
 
 # Add qt4 related header files here
-QT4_WRAP_CPP(FACE_DEMO_QT_CPP
-)
+#QT4_WRAP_CPP(FACE_DEMO_QT_CPP
+#)
 
 # Add regular cpp files here
 SET(FACE_DEMO_SOURCE

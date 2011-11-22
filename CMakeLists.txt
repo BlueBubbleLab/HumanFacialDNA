@@ -6,10 +6,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 #-------------------------------------------------------------------------------
 SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_MODULE_PATH "${INSIGHT_DEMO_SOURCE_DIR}/cmake/modules")
-SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
-SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -DDEBUG")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
-SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DDEBUG")
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+    SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
+    SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -DDEBUG")
+    SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
+    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DDEBUG")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
 
 #-------------------------------------------------------------------------------
 # Platform specific settings Settings
@@ -63,15 +66,29 @@ CONFIGURE_FILE(
 #-------------------------------------------------------------------------------
 # Find 3rd party packages and include macros
 #-------------------------------------------------------------------------------
-FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
-FIND_PACKAGE(OpenCV REQUIRED)
-FIND_PACKAGE(QWT REQUIRED)
+IF (WIN32)
+    SET(WINBIN "${CMAKE_CURRENT_SOURCE_DIR}/../winbin" CACHE PATH
+      "Location of the WINBIN git repository")
+    
+    IF(NOT EXISTS ${WINBIN})
+      MESSAGE(ERROR
+        "${WINBIN} doesn't exists, please set WINBIN to ThirdSight WINBIN project")
+    ELSE(NOT EXISTS ${WINBIN})
+        SET(CMAKE_MODULE_PATH "${WINBIN}/cmake/")
+        INCLUDE(winbin)
+    ENDIF(NOT EXISTS ${WINBIN})
+    
+    LINK_DIRECTORIES(
+        ${OpenCV_LIB_DIR}
+    )
+ELSE (WIN32)
+    FIND_PACKAGE(OpenCV REQUIRED)
+ENDIF (WIN32)
 
 #-------------------------------------------------------------------------------
 # Include sources
 #-------------------------------------------------------------------------------
 INCLUDE(cmake/sources.cmake)
-INCLUDE(${QT_USE_FILE})
 INCLUDE_DIRECTORIES(${INSIGHT_DEMO_BINARY_DIR})
 
 #-------------------------------------------------------------------------------
@@ -87,7 +104,6 @@ FILE(COPY ${INSIGHT_SOURCE_DIR}/data DESTINATION ${INSIGHT_DEMO_BINARY_DIR})
 # Include 3rd party library headers
 #-------------------------------------------------------------------------------
 INCLUDE_DIRECTORIES(
-    ${QT_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIR}
 )
 
@@ -102,8 +118,6 @@ ENDIF(OSX)
 
 TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
     insight
-    ${QT_LIBRARIES}
-    ${QT_QTMAIN_LIBRARY}
     ${OpenCV_LIBS}
 )
 
@@ -119,15 +133,6 @@ IF (OSX)
 
     # Set aliases for plugin and resource dir
     SET(plugin_dest_dir ${TARGET_GAZE_DEMO}.app/Contents/MacOS)
-    SET(qtconf_dest_dir ${TARGET_GAZE_DEMO}.app/Contents/Resources)
-
-    # Install qt plugins
-    INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
-    #INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/phonon_backend" DESTINATION ${plugin_dest_dir}/plugins COMPOENT Runtime)
-
-    # Install qt.conf
-    INSTALL(CODE "
-    FILE(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"[Paths]\nPlugins = MacOS/plugins\")" COMPONENT Runtime)
 
     # Set insight dependency directory
     SET(DIRS ${CMAKE_CURRENT_BINARY_DIR}/insight/)
