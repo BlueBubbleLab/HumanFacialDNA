@@ -7,7 +7,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "../inSight/src/insight.h"
-#include "../inSight/src/util/InsightSettings.h"
 #include "demo_version.h"
 
 #ifdef __APPLE__ 
@@ -129,11 +128,10 @@ int main (int argc, char *argv[])
     	return -1;
     }
     
-    InsightSettings *settings = InSight::settingsInstance();
     cap.set(CV_CAP_PROP_FRAME_WIDTH,
-            settings->getInt("camera:reswidth", -1));
+			InSight::getCamWidthRes());
     cap.set(CV_CAP_PROP_FRAME_HEIGHT,
-            settings->getInt("camera:resheight", -1));
+			InSight::getCamHeightRes());
     
     InSight insight(data_dir);
     if(!insight.authenticate(auth_key))
@@ -146,8 +144,8 @@ int main (int argc, char *argv[])
     cv::setWindowProperty(HUMAN_NAME, CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
     // Initialize gaze-grid
     cv::Mat camera, view, temp;
-    int pixel_width = settings->getInt("screen:reswidth", -1),
-        pixel_height = settings->getInt("screen:resheight", -1);
+	int pixel_width = InSight::getScreenWidthRes(),
+        pixel_height = InSight::getScreenHeightRes();
     view.create(cv::Size(pixel_width, pixel_height), CV_8UC3);
     view.setTo(cv::Scalar(0,0,0));
     cv::Rect roi(pixel_width-CAMVIEW_WIDTH,0,CAMVIEW_WIDTH,CAMVIEW_HEIGHT);
