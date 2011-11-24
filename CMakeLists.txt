@@ -80,13 +80,13 @@ IF (WIN32)
     
     LINK_DIRECTORIES(
         ${OpenCV_LIB_DIR}
-	#TODO(Aziz): This is necessary in visual studio, why?
-	${JPEG_LIB_DIR}
-	${GSL_LIB_DIR}
-	${GLEW_LIB_DIR}
-	${GLUT_LIB_DIR}
-	${BLAS_LIB_DIR}
-	${CURL_LIB_DIR}
+		#Libs are necessary for msvc to link the dlls
+		${JPEG_LIB_DIR}
+		${GSL_LIB_DIR}
+		${GLEW_LIB_DIR}
+		${GLUT_LIB_DIR}
+		${BLAS_LIB_DIR}
+		${CURL_LIB_DIR}
     )
 ELSE (WIN32)
     FIND_PACKAGE(OpenCV REQUIRED)
