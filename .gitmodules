@@ -1,0 +1,3 @@
+[submodule "Perseus"]
+	path = Perseus
+	url = git@github.com:ThirdSight/Perseus.git
