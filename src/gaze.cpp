@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
     return -1;
   }
 
-  Perseus perseus;
+  Perseus perseus(data_dir);
 
   if(!perseus.authenticate(auth_key))
   {
@@ -80,9 +80,9 @@ int main (int argc, char *argv[])
   }
 
   cap.set(CV_CAP_PROP_FRAME_WIDTH,
-          perseus.getCamWidthRes());
+          640 /*perseus.getCamWidthRes()*/);
   cap.set(CV_CAP_PROP_FRAME_HEIGHT,
-          perseus.getCamWidthRes());
+          480 /*perseus.getCamWidthRes()*/);
 
   cv::namedWindow(HUMAN_NAME);
 
@@ -99,18 +99,15 @@ int main (int argc, char *argv[])
         cv::flip(frame, frame, 1);
       }
 
-      std::vector<bool> emotions;
-      if(!perseus.getEmotions(frame, emotions))
+      std::vector<cv::Point> locations;
+      if(!perseus.getEyeLocations(frame, locations))
       {
         std::cerr << perseus.getError() << std::endl;
       }
       else
       {
-        for(size_t i = 0; i < emotions.size(); i++)
-        {
-          std::cout << emotions.at(i) << " ";
-        }
-        std::cout << std::endl;
+        cv::circle(frame,locations.at(0),1,CV_RGB(0,255,0));
+        cv::circle(frame,locations.at(1),1,CV_RGB(0,255,0));
       }
     }
     else
