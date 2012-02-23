@@ -6,10 +6,42 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 #-------------------------------------------------------------------------------
 SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_MODULE_PATH "${PERSEUS_DEMO_SOURCE_DIR}/cmake/modules")
-SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
-SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -DDEBUG")
-SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
-SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DDEBUG")
+
+IF(CMAKE_COMPILER_IS_GNUCXX)
+    SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
+    SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -DDEBUG")
+    SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
+    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DDEBUG")
+ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+
+#-------------------------------------------------------------------------------
+# Platform specific settings Settings
+#-------------------------------------------------------------------------------
+IF (APPLE)
+    IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        MESSAGE(STATUS " Compiling for OSX")
+        SET(OSX ON)
+    ELSE ()
+        MESSAGE(STATUS " Compiling for IOS")
+        SET(IOS ON)
+    ENDIF ()
+ENDIF ()
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    MESSAGE(STATUS " Compiling for Linux")
+    SET(LINUX ON)
+ENDIF()
+
+IF (MINGW)
+    MESSAGE(STATUS " Compiling for Windows with MinGW")
+    SET(COMPILER "mingw")
+ENDIF ()
+
+IF (MSVC)
+    MESSAGE(STATUS " Compiling for Windows with Visual Studio")
+    SET(COMPILER "vs2010")
+ENDIF ()
+
 
 #-------------------------------------------------------------------------------
 # Extract and set the version
@@ -35,15 +67,35 @@ CONFIGURE_FILE(
 #-------------------------------------------------------------------------------
 # Find 3rd party packages and include macros
 #-------------------------------------------------------------------------------
-FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtNetwork REQUIRED)
-FIND_PACKAGE(OpenCV REQUIRED)
-FIND_PACKAGE(QWT REQUIRED)
+IF (WIN32)
+    SET(WINBIN "${CMAKE_CURRENT_SOURCE_DIR}/../winbin" CACHE PATH
+      "Location of the WINBIN git repository")
+    
+    IF(NOT EXISTS ${WINBIN})
+      MESSAGE(ERROR
+        "${WINBIN} doesn't exists, please set WINBIN to ThirdSight WINBIN project")
+    ELSE(NOT EXISTS ${WINBIN})
+        SET(CMAKE_MODULE_PATH "${WINBIN}/cmake/")
+        INCLUDE(winbin)
+    ENDIF(NOT EXISTS ${WINBIN})
+    
+    LINK_DIRECTORIES(
+        ${OpenCV_LIB_DIR}
+    )
+    #TODO(Aziz) : Try to remove. Libs seem to be necessary for msvc to link the dlls
+    IF(MSVC)
+	LINK_DIRECTORIES(		
+	    ${CURL_LIB_DIR}
+	)
+    ENDIF()
+ELSE (WIN32)
+    FIND_PACKAGE(OpenCV REQUIRED)
+ENDIF (WIN32)
 
 #-------------------------------------------------------------------------------
 # Include sources
 #-------------------------------------------------------------------------------
 INCLUDE(cmake/sources.cmake)
-INCLUDE(${QT_USE_FILE})
 INCLUDE_DIRECTORIES(${PERSEUS_DEMO_BINARY_DIR})
 
 #-------------------------------------------------------------------------------
@@ -59,19 +111,53 @@ FILE(COPY ${PERSEUS_SOURCE_DIR}/data DESTINATION ${PERSEUS_DEMO_BINARY_DIR})
 # Include 3rd party library headers
 #-------------------------------------------------------------------------------
 INCLUDE_DIRECTORIES(
-    ${QT_INCLUDE_DIR}
-    ${QWT_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIR}
 )
 
 #-------------------------------------------------------------------------------
 # Add executables and link libraries
 #-------------------------------------------------------------------------------
-ADD_EXECUTABLE(${TARGET_GAZE_DEMO} ${GAZE_DEMO_SOURCE})
+IF(OSX)
+    ADD_EXECUTABLE(${TARGET_GAZE_DEMO} MACOSX_BUNDLE ${GAZE_DEMO_SOURCE})
+ELSE(OSX)
+    ADD_EXECUTABLE(${TARGET_GAZE_DEMO} ${GAZE_DEMO_SOURCE})
+ENDIF(OSX)
 TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
     perseus
-    ${QT_LIBRARIES}
-    ${QT_QTMAIN_LIBRARY}
     ${OpenCV_LIBS}
-    ${QWT_LIBRARIES}
 )
+
+#-------------------------------------------------------------------------------
+# OSX devel example bundle
+#-------------------------------------------------------------------------------
+IF (OSX)
+    INSTALL(TARGETS ${TARGET_GAZE_DEMO} BUNDLE DESTINATION . COMPONENT Runtime)
+
+    # Install resources and set icon
+    INSTALL(FILES "${PERSEUS_DEMO_SOURCE_DIR}/resources/icons/thirdsight.icns" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+    INSTALL(DIRECTORY "${PERSEUS_SOURCE_DIR}/data" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+
+    # Set aliases for plugin and resource dir
+    SET(plugin_dest_dir ${TARGET_GAZE_DEMO}.app/Contents/MacOS)
+
+    # Set perseus dependency directory
+    SET(DIRS ${CMAKE_CURRENT_BINARY_DIR}/perseus/)
+
+
+    INSTALL(CODE "
+file(GLOB_RECURSE QTPLUGINS
+\"\${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
+            include(BundleUtilities)
+            SET(BU_CHMOD_BUNDLE_ITEMS ON)
+            fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app\" \"\${QTPLUGINS}\" \"${DIRS}\")
+            " COMPONENT Runtime)
+
+SET(MACOSX_BUNDLE_ICON_FILE thirdsight.icns)
+SET(MACOSX_BUNDLE_BUNDLE_NAME "${TARGET_GAZE_DEMO}")
+SET(MACOSX_BUNDLE_INFO_STRING "${TARGET_GAZE_DEMO} "${VERSION})
+SET(MACOSX_BUNDLE_GUI_IDENTIFIER "com.ThirdSight.${TARGET_GAZE_DEMO}" )
+SET(MACOSX_BUNDLE_BUNDLE_VERSION ${VERSION})
+SET(MACOSX_BUNDLE_LONG_VERSION_STRING ${VERSION})
+SET(MACOSX_BUNDLE_COPYRIGHT "Copyright 2011 ThirdSight B.V. All Rights Reserved")
+
+ENDIF(OSX)
