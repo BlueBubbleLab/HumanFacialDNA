@@ -99,6 +99,17 @@ int main (int argc, char *argv[])
         cv::flip(frame, frame, 1);
       }
 
+      // ******************************************************************** //
+      // Replace this with out function that runs all the shizzle one by one
+      //
+      // getFaces
+      // for eacht face:
+      //    getLocation
+      //    getFaceColorHistogram
+      //    getClothPatchHistogram
+      //    getEyeLocation
+      //    getEigenFaces
+      //
       std::vector<cv::Point> locations;
       if(!perseus.getEyeLocations(frame, locations))
       {
@@ -109,6 +120,7 @@ int main (int argc, char *argv[])
         cv::circle(frame,locations.at(0),1,CV_RGB(0,255,0));
         cv::circle(frame,locations.at(1),1,CV_RGB(0,255,0));
       }
+      // ******************************************************************** //
     }
     else
     {
