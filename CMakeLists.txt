@@ -128,6 +128,25 @@ TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
 )
 
 #-------------------------------------------------------------------------------
+# Windows packaging
+#-------------------------------------------------------------------------------
+
+IF(WIN32)
+    INSTALL(TARGETS ${TARGET_NAME} DESTINATION .)
+
+    INSTALL(FILES ${OpenCV_DLL_FILES} DESTINATION .)
+    INSTALL(FILES ${CURL_DLL_FILES} DESTINATION .)
+    INSTALL(DIRECTORY ${PERSEUS_DEMOS_SOURCE_DIR}/resources DESTINATION .)
+    IF (MINGW)
+        INSTALL(FILES ${MINGW_DLL_FILES} DESTINATION .)
+    ENDIF (MINGW)
+	
+    # hack to install libstdc++-6.dll
+    find_file(LIBSTDC libstdc++-6.dll)
+    INSTALL(FILES ${LIBSTDC} DESTINATION .)
+ENDIF()
+
+#-------------------------------------------------------------------------------
 # OSX devel example bundle
 #-------------------------------------------------------------------------------
 IF (OSX)
