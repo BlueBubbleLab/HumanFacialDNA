@@ -83,7 +83,7 @@ IF (WIN32)
         ${OpenCV_LIB_DIR}
     )
     #TODO(Aziz) : Try to remove. Libs seem to be necessary for msvc to link the dlls
-    IF(MSVC)
+    IF(WIN32)
 	LINK_DIRECTORIES(		
 	    ${CURL_LIB_DIR}
 	)
@@ -136,7 +136,7 @@ IF(WIN32)
 
     INSTALL(FILES ${OpenCV_DLL_FILES} DESTINATION .)
     INSTALL(FILES ${CURL_DLL_FILES} DESTINATION .)
-    INSTALL(DIRECTORY ${PERSEUS_DEMOS_SOURCE_DIR}/resources DESTINATION .)
+    INSTALL(DIRECTORY ${PERSEUS_DEMOS_SOURCE_DIR}resources DESTINATION .)
     IF (MINGW)
         INSTALL(FILES ${MINGW_DLL_FILES} DESTINATION .)
     ENDIF (MINGW)
