@@ -110,15 +110,13 @@ int main (int argc, char *argv[])
       //    getEyeLocation
       //    getEigenFaces
       //
-      std::vector<cv::Point> locations;
-      if(!perseus.getEyeLocations(frame, locations))
+      if(!perseus.process(frame))
       {
         std::cerr << perseus.getError() << std::endl;
       }
       else
       {
-        cv::circle(frame,locations.at(0),1,CV_RGB(0,255,0));
-        cv::circle(frame,locations.at(1),1,CV_RGB(0,255,0));
+        // Do something after the frame has been processed.
       }
       // ******************************************************************** //
     }
