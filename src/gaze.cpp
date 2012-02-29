@@ -110,13 +110,9 @@ int main (int argc, char *argv[])
       //    getEyeLocation
       //    getEigenFaces
       //
-      if(!perseus.process(frame))
+      if(!perseus.saveFacesForCounting(frame))
       {
         std::cerr << perseus.getError() << std::endl;
-      }
-      else
-      {
-        // Do something after the frame has been processed.
       }
       // ******************************************************************** //
     }
