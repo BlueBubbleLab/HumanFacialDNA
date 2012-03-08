@@ -81,13 +81,8 @@ IF (WIN32)
     
     LINK_DIRECTORIES(
         ${OpenCV_LIB_DIR}
-    )
-    #TODO(Aziz) : Try to remove. Libs seem to be necessary for msvc to link the dlls
-    IF(MSVC)
-	LINK_DIRECTORIES(		
 	    ${CURL_LIB_DIR}
 	)
-    ENDIF()
 ELSE (WIN32)
     FIND_PACKAGE(OpenCV REQUIRED)
 ENDIF (WIN32)
