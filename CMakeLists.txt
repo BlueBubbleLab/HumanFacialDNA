@@ -123,11 +123,25 @@ TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
 )
 
 #-------------------------------------------------------------------------------
+# Windows post build
+#-------------------------------------------------------------------------------
+
+IF(WIN32)
+    ADD_CUSTOM_COMMAND(
+        TARGET ${TARGET_GAZE_DEMO}
+        POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${PERSEUS_DEMO_BINARY_DIR}/perseus/libperseus.dll
+                ${PERSEUS_DEMO_BINARY_DIR}
+    )
+ENDIF()
+
+#-------------------------------------------------------------------------------
 # Windows packaging
 #-------------------------------------------------------------------------------
 
 IF(WIN32)
-    INSTALL(TARGETS ${TARGET_NAME} DESTINATION .)
+    INSTALL(TARGETS ${TARGET_GAZE_DEMO} DESTINATION .)
 
     INSTALL(FILES ${OpenCV_DLL_FILES} DESTINATION .)
     INSTALL(FILES ${CURL_DLL_FILES} DESTINATION .)
