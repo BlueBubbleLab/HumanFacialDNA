@@ -113,7 +113,7 @@ int main (int argc, char *argv[])
 
       // Save the faces in the current frame for counting
       perseus.saveFacesForCounting(frame);
-      perseus.getReturningFaces();
+      //perseus.getReturningFaces();
 
       // ******************************************************************** //
     }
