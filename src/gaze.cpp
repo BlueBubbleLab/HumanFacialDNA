@@ -152,7 +152,7 @@ int main (int argc, char *argv[])
                 cv::rectangle(frame,face,colors[i%8],3);
 
                 std::ostringstream idString;
-                idString << "ID #" << people.at(i).getID();
+                idString << "ID #" << people.at(i).getBestMatch();
                 std::ostringstream genderString;
                 genderString << "Gender: " << ((people.at(i).getGender())==-1?"male":"female");
                 std::ostringstream ageString;
