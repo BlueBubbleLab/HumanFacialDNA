@@ -149,14 +149,7 @@ int main (int argc, char *argv[])
 
                 cv::Rect face = (people.at(i)).getFaceRect();
 
-                if (people.at(i).useOrNot())
-                {
-                    cv::rectangle(frame,face,colors[i%8],3);
-                }
-                else
-                {
-                    cv::rectangle(frame,face,cv::Scalar(0,0,0),3);
-                }
+                cv::rectangle(frame,face,colors[i%8],3);
 
                 std::ostringstream idString;
                 idString << "ID #" << people.at(i).getID();
