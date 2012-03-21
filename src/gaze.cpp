@@ -154,11 +154,9 @@ int main (int argc, char *argv[])
                 std::ostringstream idString;
                 idString << "ID #" << people.at(i).getBestMatch();
                 std::ostringstream genderString;
-//                genderString << "Gender: " << ((people.at(i).getGender())==-1?"male":"female");
                 genderString << "Gender: " << ((people.at(i).getGender())==-1?"male":"female");
                 std::ostringstream ageString;
-//                ageString << "Age: " << people.at(i).getAge();
-                ageString << "Age: " << perseus.getAverageAge(people.at(i).getBestMatch());
+                ageString << "Age: " << people.at(i).getAge();
                 cv::putText(frame, idString.str(),cv::Point(face.x+10,face.y+20),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
                 cv::putText(frame, genderString.str(), cv::Point(face.x+10,face.y+40),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
                 cv::putText(frame, ageString.str(), cv::Point(face.x+10,face.y+60),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
