@@ -5,7 +5,6 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "../Perseus/src/perseus.h"
-#include "../Perseus/src/proc/person.h"
 #include "demo_version.h"
 
 #include "../Perseus/src/proc/pca.h"
@@ -81,7 +80,7 @@ int main (int argc, char *argv[])
 
     if(!perseus.authenticate(auth_key))
     {
-        std::cerr << perseus.getError() << std::endl;
+        std::cerr << perseus.getErrorDescription() << std::endl;
         return -1;
     }
 
@@ -136,10 +135,10 @@ int main (int argc, char *argv[])
             // NOTE: HERE IS A TYPICAL USAGE SCENARIO PSEUDISHCODE: ===================================================
             if(!perseus.process(frame))
             {
-                std::cerr << perseus.getError() << std::endl;
+                std::cerr << perseus.getErrorDescription() << std::endl;
             }
             //
-            std::vector<Persona> people;
+            std::vector<Person> people;
             perseus.getCurrentPeople(people);
             int currentmales=0;
             int currentfemales=0;
