@@ -116,6 +116,7 @@ int main (int argc, char *argv[])
 
 
             // NOTE: HERE IS A TYPICAL USAGE SCENARIO PSEUDISHCODE: ===================================================
+//            if(!perseus.process(frame, cv::Rect(0,0,350,350))) // set optional ROI on frame; this ROI will be processed only
             if(!perseus.process(frame))
             {
                 std::cerr << perseus.getErrorDescription() << std::endl;
