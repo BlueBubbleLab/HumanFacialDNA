@@ -128,7 +128,7 @@ int main (int argc, char *argv[])
             {
                 cv::Rect face = (people.at(i)).getFaceRect();
 
-                cv::rectangle(frame,face,colors[people.at(i).getBestMatch()%8],3);
+                cv::rectangle(frame,face,colors[people.at(i).getID()%8],3);
 
                 cv::Point rightEye = (people.at(i)).getRightEye();
                 cv::Point leftEye  = (people.at(i)).getLeftEye();
@@ -142,18 +142,18 @@ int main (int argc, char *argv[])
                 cv::circle(frame,leftEye,3,cv::Scalar(0,255,0));
 
                 std::ostringstream idString;
-                idString << "ID #" << people.at(i).getBestMatch();
+                idString << "ID #" << people.at(i).getID();
                 std::ostringstream genderString;
                 genderString << "Gender: " << ((people.at(i).getGender())==-1?"male":"female");
                 std::ostringstream ageString;
                 ageString << "Age: " << people.at(i).getAge();
                 std::ostringstream moodString;
                 moodString << "Mood" << people.at(i).getMood();
-                cv::putText(frame, idString.str(),cv::Point(face.x+10,face.y+20),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
-                cv::putText(frame, genderString.str(), cv::Point(face.x+10,face.y+40),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
-                cv::putText(frame, ageString.str(), cv::Point(face.x+10,face.y+60),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
-                cv::putText(frame, ageString.str(), cv::Point(face.x+10,face.y+60),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
-                cv::putText(frame, moodString.str(), cv::Point(face.x+10,face.y+80),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
+                cv::putText(frame, idString.str(),cv::Point(face.x+10,face.y+20),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
+                cv::putText(frame, genderString.str(), cv::Point(face.x+10,face.y+40),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
+                cv::putText(frame, ageString.str(), cv::Point(face.x+10,face.y+60),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
+                cv::putText(frame, ageString.str(), cv::Point(face.x+10,face.y+60),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
+                cv::putText(frame, moodString.str(), cv::Point(face.x+10,face.y+80),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
 
             }
 
