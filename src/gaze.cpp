@@ -5,9 +5,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "../Perseus/src/perseus.h"
-#include "demo_version.h"
 
-#include "../Perseus/src/proc/pca.h"
 
 #define W 12
 #define H 9
@@ -89,8 +87,6 @@ int main (int argc, char *argv[])
     cap.set(CV_CAP_PROP_FRAME_HEIGHT,
             480 /*perseus.getCamWidthRes()*/);
 
-    cv::namedWindow(HUMAN_NAME);
-
     cv::Mat frame;
 
 
@@ -119,36 +115,31 @@ int main (int argc, char *argv[])
 
 
 
-            // ******************************************************************** //
-            // Replace this with out function that runs all the shizzle oqne by one
-            //
-            // getFaces
-            // for eacht face:
-            //    getLocation
-            //    getFaceColorHistogram
-            //    getClothPatchHistogram
-            //    getEyeLocation
-            //    getEigenFaces
-            //
-
-
             // NOTE: HERE IS A TYPICAL USAGE SCENARIO PSEUDISHCODE: ===================================================
             if(!perseus.process(frame))
             {
                 std::cerr << perseus.getErrorDescription() << std::endl;
             }
-            //
+
             std::vector<Person> people;
             perseus.getCurrentPeople(people);
-            int currentmales=0;
-            int currentfemales=0;
+
             for (unsigned int i=0; i<people.size();i++)
             {
-
-
                 cv::Rect face = (people.at(i)).getFaceRect();
 
                 cv::rectangle(frame,face,colors[people.at(i).getBestMatch()%8],3);
+
+                cv::Point rightEye = (people.at(i)).getRightEye();
+                cv::Point leftEye  = (people.at(i)).getLeftEye();
+
+                rightEye.x += face.x;
+                rightEye.y += face.y;
+                leftEye.x += face.x;
+                leftEye.y += face.y;
+
+                cv::circle(frame,rightEye,3,cv::Scalar(0,255,0));
+                cv::circle(frame,leftEye,3,cv::Scalar(0,255,0));
 
                 std::ostringstream idString;
                 idString << "ID #" << people.at(i).getBestMatch();
@@ -164,27 +155,7 @@ int main (int argc, char *argv[])
                 cv::putText(frame, ageString.str(), cv::Point(face.x+10,face.y+60),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
                 cv::putText(frame, moodString.str(), cv::Point(face.x+10,face.y+80),cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getBestMatch()%8]);
 
-                if (people.at(i).getGender()==-1)
-                {
-                    currentmales++;
-                }
-                else
-                {
-                    currentfemales++;
-                }
             }
-
-            if (currentmales>currentfemales)
-            {
-//                std::cout << "more males present" << std::endl;
-                cv::imshow("Output",tits);
-            }
-             else
-            {
-//                std::cout << "more females present" << std::endl;
-                cv::imshow("Output",pony);
-            }
-            cv::waitKey(1);
 
             //
             // ******************************************************************** //
@@ -196,7 +167,7 @@ int main (int argc, char *argv[])
 //        cv::Mat bigframe;
 //        cv::resize(frame,bigframe,cv::Size(1280,1024));
 //        cv::imshow(HUMAN_NAME, bigframe);
-        cv::imshow(HUMAN_NAME, frame);
+        cv::imshow("Perseus example", frame);
         char key = cv::waitKey(1);
         if(key == 'q')
         {
