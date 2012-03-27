@@ -48,8 +48,10 @@ ENDIF ()
 #-------------------------------------------------------------------------------
 SET(PRODUCT "PerseusDemo")
 
+FIND_PACKAGE(Git REQUIRED)
+
 EXECUTE_PROCESS(
-    COMMAND git describe --tags --abbrev=0
+    COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
     OUTPUT_VARIABLE GIT_VERSION
     ERROR_VARIABLE GIT_ERROR
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -58,14 +60,14 @@ EXECUTE_PROCESS(
 IF(GIT_VERSION)
     SET(VERSION ${GIT_VERSION})
 ELSE(NOT GIT_VERSION)
-    SET(MAJOR_VERSION "00")
-    SET(MINOR_VERSION "01")
+    SET(MAJOR_VERSION "10")
+    SET(MINOR_VERSION "00")
     SET(VERSION "${MAJOR_VERSION}.${MINOR_VERSION}")
     MESSAGE(STATUS " git tag not usable, using ${VERSION} as VERSION")
 ENDIF(GIT_VERSION)
 
 EXECUTE_PROCESS(
-    COMMAND git log --pretty=format:%h -n 1
+    COMMAND ${GIT_EXECUTABLE} log --pretty=format:%h -n 1
     OUTPUT_VARIABLE COMMIT
     ERROR_VARIABLE GIT_ERROR
     OUTPUT_STRIP_TRAILING_WHITESPACE
