@@ -1,7 +1,11 @@
+#define PRODUCT     "@PRODUCT@"
+#define VERSION     "@VERSION@"
+#define COMMIT      "@COMMIT@"
+
 #ifdef DEBUG
-    #define NAME   "Demo (debug)"
+    #define NAME   PRODUCT " (debug)"
 #else
-    #define NAME   "Demo"
+    #define NAME   PRODUCT
 #endif
-#define VERSION    "@VERSION@"
+
 #define HUMAN_NAME NAME " v" VERSION " (" __DATE__ ")"

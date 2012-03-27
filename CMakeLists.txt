@@ -46,8 +46,10 @@ ENDIF ()
 #-------------------------------------------------------------------------------
 # Extract and set the version
 #-------------------------------------------------------------------------------
+SET(PRODUCT "PerseusDemo")
+
 EXECUTE_PROCESS(
-    COMMAND git describe --tags
+    COMMAND git describe --tags --abbrev=0
     OUTPUT_VARIABLE GIT_VERSION
     ERROR_VARIABLE GIT_ERROR
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -56,8 +58,18 @@ EXECUTE_PROCESS(
 IF(GIT_VERSION)
     SET(VERSION ${GIT_VERSION})
 ELSE(NOT GIT_VERSION)
-    SET(VERSION "1.0")
+    SET(MAJOR_VERSION "01")
+    SET(MINOR_VERSION "00")
+    SET(VERSION "${MAJOR_VERSION}.${MINOR_VERSION}")
+    MESSAGE(STATUS " git tag not usable, using ${VERSION} as VERSION")
 ENDIF(GIT_VERSION)
+
+EXECUTE_PROCESS(
+    COMMAND git log --pretty=format:%h -n 1
+    OUTPUT_VARIABLE COMMIT
+    ERROR_VARIABLE GIT_ERROR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 CONFIGURE_FILE(
     "${PERSEUS_DEMO_SOURCE_DIR}/cmake/demo_version.h.in"
@@ -96,7 +108,7 @@ INCLUDE_DIRECTORIES(${PERSEUS_DEMO_BINARY_DIR})
 #-------------------------------------------------------------------------------
 # Add InSight subproject
 #-------------------------------------------------------------------------------
-SET(PERSEUS_STANDALONE FALSE)
+SET(PERSEUS_STANDALONE TRUE) #Don't pass product id to perseus
 ADD_SUBDIRECTORY(${PERSEUS_DEMO_SOURCE_DIR}/Perseus perseus)
 INCLUDE_DIRECTORIES(${PERSEUS_SOURCE_DIR}/src)
 LINK_DIRECTORIES(${PERSEUS_BINARY_DIR})

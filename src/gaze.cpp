@@ -5,7 +5,11 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "../Perseus/src/perseus.h"
+#include "demo_version.h"
 
+#ifndef HUMAN_NAME
+    #define HUMAN_NAME "Perseus Demo"
+#endif
 
 int main (int argc, char *argv[])
 {
@@ -80,7 +84,7 @@ int main (int argc, char *argv[])
   cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 
   //Create an OpenCV output display window
-  cv::namedWindow("Perseus Example");
+  cv::namedWindow(HUMAN_NAME);
 
   cv::Mat frame;
 
@@ -180,7 +184,7 @@ int main (int argc, char *argv[])
     }
 
     //Show processed frame
-    cv::imshow("Perseus example", frame);
+    cv::imshow(HUMAN_NAME, frame);
 
     //Press 'q' to quit the program
     char key = cv::waitKey(1);
