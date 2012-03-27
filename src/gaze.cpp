@@ -163,8 +163,8 @@ int main (int argc, char *argv[])
       gender_string << "Gender: " << (person.getGender() == -1 ? "male" : "female");
       std::ostringstream age_string;
       age_string << "Age: " << person.getAge();
-      std::ostringstream mood_string;
-      mood_string << "Mood" << person.getMood();
+//      std::ostringstream mood_string;
+//      mood_string << "Mood" << person.getMood();
 
       cv::putText(frame, id_string.str(), cv::Point(face.x+10, face.y+20),
                   cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
@@ -174,8 +174,8 @@ int main (int argc, char *argv[])
                   cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
       cv::putText(frame, age_string.str(), cv::Point(face.x+10, face.y+60),
                   cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
-      cv::putText(frame, mood_string.str(), cv::Point(face.x+10, face.y+80),
-                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
+//      cv::putText(frame, mood_string.str(), cv::Point(face.x+10, face.y+80),
+//                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
 
       // SHOW MOOD BAR
       cv::Rect moodRed = cv::Rect(face.x+3,face.y+3,round(face.width/2),4);
@@ -186,6 +186,8 @@ int main (int argc, char *argv[])
       float moodValue = people.at(i).getMood();
       moodValue+=2; //make non negative
       moodValue /=4; // normalize between 0 and 1
+      if (moodValue<0.) moodValue=0.;
+      if (moodValue>4.) moodValue=4.;
       cv::Rect theMood = cv::Rect(face.x+round(face.width*moodValue),face.y+3,3,4);
       cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
 
