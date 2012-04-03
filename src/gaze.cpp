@@ -166,20 +166,18 @@ int main (int argc, char *argv[])
 //      std::ostringstream id_string2;
 //      id_string2 << id_string.str() << " Best -> " << person.getID2();
       std::ostringstream gender_string;
-      gender_string << "Gender: " << (person.getGender() == -1 ? "male" : "female");
+//      gender_string << "Gender: " << (person.getGender() < 0 ? "male" : "female");
       std::ostringstream age_string;
       age_string << "Age: " << person.getAge();
 //      std::ostringstream mood_string;
 //      mood_string << "Mood" << person.getMood();
 
       cv::putText(frame, id_string.str(), cv::Point(face.x+10, face.y+20),
-                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
-      cv::putText(frame, gender_string.str(), cv::Point(face.x+10, face.y+40),
-                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
-      cv::putText(frame, age_string.str(), cv::Point(face.x+10, face.y+60),
-                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
-      cv::putText(frame, age_string.str(), cv::Point(face.x+10, face.y+60),
-                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
+                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
+//      cv::putText(frame, gender_string.str(), cv::Point(face.x+10, face.y+40),
+//                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
+      cv::putText(frame, age_string.str(), cv::Point(face.x+10, face.y+40),
+                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
 //      cv::putText(frame, mood_string.str(), cv::Point(face.x+10, face.y+80),
 //                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
 
@@ -189,13 +187,23 @@ int main (int argc, char *argv[])
       cv::Rect moodGreen = cv::Rect(face.x+round(face.width/2),face.y+3,round(face.width/2)-3,4);
       cv::rectangle(frame,moodGreen,cv::Scalar(0,255,0),CV_FILLED);
 
-      float moodValue = people.at(i).getMood();
+      float moodValue = person.getMood();
       moodValue+=2; //make non negative
       if (moodValue<0.) moodValue=0.;
       if (moodValue>4.) moodValue=4.;
       moodValue /=4; // normalize between 0 and 1
       cv::Rect theMood = cv::Rect(face.x+round(face.width*moodValue),face.y+3,3,4);
       cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
+
+      // SHOW GENDER BAR
+      cv::Rect genderBlue = cv::Rect(face.x+3,face.y+face.height-6,round(face.width/2),4);
+      cv::rectangle(frame,genderBlue,cv::Scalar(255,0,0),CV_FILLED);
+      cv::Rect genderPink = cv::Rect(face.x+round(face.width/2),face.y+face.height-6,round(face.width/2)-3,4);
+      cv::rectangle(frame,genderPink,cv::Scalar(147,20,255),CV_FILLED);
+
+      float genderValue = (person.getGender() + 1) / 2;
+      cv::Rect theGender = cv::Rect(face.x+round(face.width*genderValue),face.y+face.height-6,3,4);
+      cv::rectangle(frame,theGender,cv::Scalar(0,0,0),CV_FILLED);
 
     }
 
