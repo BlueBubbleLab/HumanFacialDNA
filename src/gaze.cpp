@@ -163,6 +163,8 @@ int main (int argc, char *argv[])
       //Get person's ID and other features and draw it in the face rectangle
       std::ostringstream id_string;
       id_string << "ID #" << person.getID();
+//      std::ostringstream id_string2;
+//      id_string2 << id_string.str() << " Best -> " << person.getID2();
       std::ostringstream gender_string;
       gender_string << "Gender: " << (person.getGender() == -1 ? "male" : "female");
       std::ostringstream age_string;
@@ -189,15 +191,20 @@ int main (int argc, char *argv[])
 
       float moodValue = people.at(i).getMood();
       moodValue+=2; //make non negative
-      moodValue /=4; // normalize between 0 and 1
       if (moodValue<0.) moodValue=0.;
       if (moodValue>4.) moodValue=4.;
+      moodValue /=4; // normalize between 0 and 1
       cv::Rect theMood = cv::Rect(face.x+round(face.width*moodValue),face.y+3,3,4);
       cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
 
     }
 
     //Show processed frame
+
+//    cv::Mat bigframe;
+//    cv::resize(frame,bigframe,cv::Size(1280,1024));
+//    cv::imshow(HUMAN_NAME, bigframe);
+
     cv::imshow(HUMAN_NAME, frame);
 
     //Press 'q' to quit the program
