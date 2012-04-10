@@ -142,9 +142,6 @@ int main (int argc, char *argv[])
       //Retrieve the person's face
       cv::Rect face = person.getFaceRect();
 
-      //Draw a rectangle around person's face on the current frame
-      cv::rectangle(frame, face, colors[person.getID()%8], 3);
-
       //Retrieve left and right eye locations of the person.
       //Eye location is relative to the face rectangle.
       cv::Point right_eye = person.getRightEye();
@@ -163,57 +160,65 @@ int main (int argc, char *argv[])
       //Get person's ID and other features and draw it in the face rectangle
       std::ostringstream id_string;
       id_string << "ID #" << person.getID();
-//      std::ostringstream id_string2;
-//      id_string2 << id_string.str() << " Best -> " << person.getID2();
-      std::ostringstream gender_string;
-//      gender_string << "Gender: " << (person.getGender() < 0 ? "male" : "female");
       std::ostringstream age_string;
       age_string << "Age: " << person.getAge();
-//      std::ostringstream mood_string;
-//      mood_string << "Mood" << person.getMood();
 
-      cv::putText(frame, id_string.str(), cv::Point(face.x+10, face.y+20),
+      cv::putText(frame, id_string.str(), cv::Point(face.x+10, face.y+30),
                   cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
-//      cv::putText(frame, gender_string.str(), cv::Point(face.x+10, face.y+40),
-//                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
-      cv::putText(frame, age_string.str(), cv::Point(face.x+10, face.y+40),
+      cv::putText(frame, age_string.str(), cv::Point(face.x+10, face.y+50),
                   cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
-//      cv::putText(frame, mood_string.str(), cv::Point(face.x+10, face.y+80),
-//                  cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[people.at(i).getID()%8]);
 
       // SHOW MOOD BAR
-      cv::Rect moodRed = cv::Rect(face.x+3,face.y+3,round(face.width/2),4);
+      cv::Rect moodRed = cv::Rect(face.x+3,face.y+3,round(face.width/2),10);
       cv::rectangle(frame,moodRed,cv::Scalar(0,0,255),CV_FILLED);
-      cv::Rect moodGreen = cv::Rect(face.x+round(face.width/2),face.y+3,round(face.width/2)-3,4);
+      cv::Rect moodGreen = cv::Rect(face.x+round(face.width/2),face.y+3,round(face.width/2)-1,10);
       cv::rectangle(frame,moodGreen,cv::Scalar(0,255,0),CV_FILLED);
+
+      cv::putText(frame, "MOOD", cv::Point(face.x+3, face.y+10),
+                  cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0,0,0));
 
       float moodValue = person.getMood();
       moodValue+=2; //make non negative
       if (moodValue<0.) moodValue=0.;
       if (moodValue>4.) moodValue=4.;
       moodValue /=4; // normalize between 0 and 1
-      cv::Rect theMood = cv::Rect(face.x+round(face.width*moodValue),face.y+3,3,4);
-      cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
 
       // SHOW GENDER BAR
-      cv::Rect genderBlue = cv::Rect(face.x+3,face.y+face.height-6,round(face.width/2),4);
-      cv::rectangle(frame,genderBlue,cv::Scalar(255,0,0),CV_FILLED);
-      cv::Rect genderPink = cv::Rect(face.x+round(face.width/2),face.y+face.height-6,round(face.width/2)-3,4);
+      cv::Rect genderBlue = cv::Rect(face.x+3,face.y+face.height-13,round(face.width/2),10);
+      cv::rectangle(frame,genderBlue,cv::Scalar(255,55,55),CV_FILLED);
+      cv::Rect genderPink = cv::Rect(face.x+round(face.width/2),face.y+face.height-13,round(face.width/2)-1,10);
       cv::rectangle(frame,genderPink,cv::Scalar(147,20,255),CV_FILLED);
 
-      float genderValue = (person.getGender() + 1) / 2;
-      cv::Rect theGender = cv::Rect(face.x+round(face.width*genderValue),face.y+face.height-6,3,4);
+      cv::putText(frame, "GENDER", cv::Point(face.x+3, face.y+face.height-6),
+                  cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0,0,0));
+
+
+      //Draw a rectangle around person's face on the current frame
+      cv::rectangle(frame, face, colors[person.getID()%8], 3);
+
+
+      cv::Rect theMood = cv::Rect(face.x+round(face.width*moodValue),face.y+3,3,10);
+      cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
+      cv::Rect theMoodInnerWhite = cv::Rect(face.x+round(face.width*moodValue)+1,face.y+4,1,8);
+      cv::rectangle(frame,theMoodInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
+
+      float genderValue = (person.getGender() + 1) / 2.;
+      cv::Rect theGender = cv::Rect(face.x+round(face.width*genderValue),face.y+face.height-13,3,10);
       cv::rectangle(frame,theGender,cv::Scalar(0,0,0),CV_FILLED);
+      cv::Rect theGenderInnerWhite = cv::Rect(face.x+round(face.width*genderValue)+1,face.y+face.height-12,1,8);
+      cv::rectangle(frame,theGenderInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
+
+
 
     }
 
     //Show processed frame
 
-//    cv::Mat bigframe;
-//    cv::resize(frame,bigframe,cv::Size(1280,1024));
-//    cv::imshow(HUMAN_NAME, bigframe);
+    cv::Mat bigframe;
+    cv::resize(frame,bigframe,cv::Size(1280,1024));
+    cv::imshow(HUMAN_NAME, bigframe);
 
-    cv::imshow(HUMAN_NAME, frame);
+//    cv::imshow(HUMAN_NAME, frame);
 
     //Press 'q' to quit the program
     char key = cv::waitKey(1);
