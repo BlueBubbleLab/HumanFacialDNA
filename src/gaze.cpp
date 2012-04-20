@@ -100,9 +100,16 @@ int main (int argc, char *argv[])
     {{255, 0, 255}}
   };
 
+  //If desirable skips of a video can be skipped.
+  int processEveryNthFrame = 3;
+  // keep track of how many frames are processed
+  int frameCount           = 0;
+
   //Start main processing loop
   while(true)
   {
+    frameCount++;
+
     //Grab a frame
     cap >> frame;
 
@@ -118,12 +125,29 @@ int main (int argc, char *argv[])
       cv::flip(frame, frame, 1);
     }
 
+    cv::Rect roi;
+    //specify the roi that will be extracted from the frame
+    roi.x      = 0;                // pixels to skip from the left
+    roi.y      = 220;                // pixels to skip from the top
+    roi.width  = frame.cols;       // width of roi
+    roi.height = frame.rows-roi.y; // height of roi
+    // extract roi from frame and continue with that part of the frame only
+    frame = frame(roi);
+
+
     //Use perseus instance to procees current frame.
     //Process function evaluates the frames contents and
     //must be called before getCurrentPeople();
-    if (!perseus.process(frame))
+
+    if (frameCount % processEveryNthFrame == 0)
     {
-      std::cerr << perseus.getErrorDescription() << std::endl;
+
+
+
+        if (!perseus.process(frame))
+        {
+          std::cerr << perseus.getErrorDescription() << std::endl;
+        }
     }
 
     //Get the list of people in the current frame
