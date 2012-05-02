@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
   };
 
   //If desirable skips of a video can be skipped.
-  int processEveryNthFrame = 3;
+  int processEveryNthFrame = 1;
   // keep track of how many frames are processed
   int frameCount           = 0;
 
@@ -125,12 +125,17 @@ int main (int argc, char *argv[])
       cv::flip(frame, frame, 1);
     }
 
+    int marginTop     = 0;
+    int marginBottom  = 0;
+    int marginLeft    = 0;
+    int marginRight   = 0;
+
     cv::Rect roi;
     //specify the roi that will be extracted from the frame
-    roi.x      = 0;                // pixels to skip from the left
-    roi.y      = 220;                // pixels to skip from the top
-    roi.width  = frame.cols;       // width of roi
-    roi.height = frame.rows-roi.y; // height of roi
+    roi.x      = marginLeft;                    // pixels to skip from the left
+    roi.y      = marginTop;                     // pixels to skip from the top
+    roi.width  = frame.cols-roi.x-marginRight;  // width of roi
+    roi.height = frame.rows-roi.y-marginBottom; // height of roi
     // extract roi from frame and continue with that part of the frame only
     frame = frame(roi);
 
@@ -139,7 +144,7 @@ int main (int argc, char *argv[])
     //Process function evaluates the frames contents and
     //must be called before getCurrentPeople();
 
-    if (frameCount % processEveryNthFrame == 0)
+    if (frameCount % processEveryNthFrame == 0 && frameCount>0)
     {
 
 
