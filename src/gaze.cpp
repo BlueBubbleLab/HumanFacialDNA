@@ -113,11 +113,22 @@ int main (int argc, char *argv[])
     //Grab a frame
     cap >> frame;
 
+
     //If frame is empty break
     if (frame.empty())
     {
       break;
     }
+
+
+//    if (frameCount<=8000)
+//    {
+//        if (frameCount % 250 == 0)
+//        {
+//            std::cout << "framecount: " << frameCount << std::endl;
+//        }
+//        continue;
+//    }
 
     //Flip frame if capturing from webcam
     if (is_webcam_input)
@@ -143,6 +154,7 @@ int main (int argc, char *argv[])
     //Use perseus instance to procees current frame.
     //Process function evaluates the frames contents and
     //must be called before getCurrentPeople();
+
 
     if (frameCount % processEveryNthFrame == 0 && frameCount>0)
     {
@@ -223,7 +235,7 @@ int main (int argc, char *argv[])
 
 
       //Draw a rectangle around person's face on the current frame
-      cv::rectangle(frame, face, colors[person.getID()%8], 3);
+//      cv::rectangle(frame, face, colors[person.getID()%8], 3);
 
 
       cv::Rect theMood = cv::Rect(face.x+round(face.width*moodValue),face.y+3,3,10);
@@ -244,6 +256,13 @@ int main (int argc, char *argv[])
       cv::line(frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), colors[person.getID()%8],2);
     }
 
+
+    std::ostringstream peopleCounter_string;
+    peopleCounter_string << "People counter: ";
+    cv::putText(frame, peopleCounter_string.str(), cv::Point(3, 13),cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0),2);
+    std::ostringstream peopleCounterNR_string;
+    peopleCounterNR_string << perseus.getPeopleCount();
+    cv::putText(frame, peopleCounterNR_string.str(), cv::Point(15, 40),cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0),2);
     //Show processed frame
 
 //    cv::Mat bigframe;
@@ -251,6 +270,8 @@ int main (int argc, char *argv[])
 //    cv::imshow(HUMAN_NAME, bigframe);
 
     cv::imshow(HUMAN_NAME, frame);
+
+//    cv::waitKey();
 
     //Press 'q' to quit the program
     char key = cv::waitKey(1);
