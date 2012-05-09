@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <time.h>
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -10,6 +11,8 @@
 #ifndef HUMAN_NAME
 #define HUMAN_NAME "Perseus Demo"
 #endif
+
+#define RECORDING 0
 
 int main (int argc, char *argv[])
 {
@@ -100,7 +103,7 @@ int main (int argc, char *argv[])
         {{255, 0, 255}}
     };
 
-
+#if RECORDING
     std::ofstream storeFile;
     std::ostringstream fileName;
     fileName << "outputData_" << time(NULL) << ".csv";
@@ -123,6 +126,7 @@ int main (int argc, char *argv[])
     std::vector<int> pitches(3,0);
     std::vector<int> uniqueIDsInOutput;
     std::vector<int> newIDsThisBin;
+#endif
 
 
     //If desirable skips of a video can be skipped.
@@ -132,9 +136,11 @@ int main (int argc, char *argv[])
 
     cap >> frame;
 
+#if RECORDING
     std::ostringstream videoName;
     videoName << "outputVideo_" << time(NULL) << ".avi"; //videoName.str().c_str()
     cv::VideoWriter videoOutput(videoName.str().c_str(), CV_FOURCC('D','I','V','X'), 5, frame.size());
+#endif
 
     //Start main processing loop
     while(true)
@@ -284,15 +290,11 @@ int main (int argc, char *argv[])
             cv::line(frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), colors[person.getID()%8],2);
 
 
-
+#if RECORDING
             //store to csv...
             storeFile << frameCount << "," << person.getID() << "," << person.getTime() << "," << person.getAge() << "," << person.getGender() << ","
                       << person.getFaceRect().x << "," << person.getFaceRect().y << "," << person.getFaceRect().width << ","
                       << person.getYaw() << "," << person.getPitch() << "\n";
-
-
-
-
 
 
             if (person.getTime()-endTimePreviousBin > outputBinSizeInMiliSec)
@@ -349,14 +351,17 @@ int main (int argc, char *argv[])
                 uniqueIDsInOutput.push_back(person.getID());
                 newIDsThisBin.push_back(person.getID());
             }
+#endif
         }
 
+#if RECORDING
         if (people.size()==0)
         {
             // when no people are recognized in a frame, store zeros so the csv file will be synchronous with the video
             storeFile << frameCount << "," << "0" << "," << "0" << "," << "0" << "," << "0" << ","
                       << "0" << "," << "0" << "," << "0" << "," << "0" << "," << "0" << "\n";
         }
+#endif
 
 
 
@@ -377,7 +382,9 @@ int main (int argc, char *argv[])
 
         cv::imshow(HUMAN_NAME, frame);
 
+#if RECORDING
         videoOutput << frame;
+#endif
 
         //    cv::waitKey();
 
@@ -385,8 +392,9 @@ int main (int argc, char *argv[])
         char key = cv::waitKey(1);
         if (key == 'q')
         {
+#if RECORDING
             storeFile.close();
-
+#endif
             break;
         }
     }
