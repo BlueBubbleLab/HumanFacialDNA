@@ -238,56 +238,65 @@ int main (int argc, char *argv[])
             std::ostringstream age_string;
             age_string << "Age: " << person.getAge();
 
-            cv::putText(frame, id_string.str(), cv::Point(face.x+10, face.y+30),
+            cv::putText(frame, id_string.str(), cv::Point(face.x+3, face.y+14),
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
-            cv::putText(frame, age_string.str(), cv::Point(face.x+10, face.y+50),
+            cv::putText(frame, age_string.str(), cv::Point(face.x+3, face.y+34),
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
 
             // SHOW MOOD BAR
-            cv::Rect moodRed = cv::Rect(face.x+3,face.y+3,round(face.width/2),10);
-            cv::rectangle(frame,moodRed,cv::Scalar(0,0,255),CV_FILLED);
-            cv::Rect moodGreen = cv::Rect(face.x+round(face.width/2),face.y+3,round(face.width/2)-1,10);
-            cv::rectangle(frame,moodGreen,cv::Scalar(0,255,0),CV_FILLED);
+            int moodPos = 16;
+            cv::Rect moodBorder = cv::Rect( face.x, face.y+face.height+moodPos, round(face.width/2)+round(face.width/2), 12 );
+            cv::Rect moodGreen  = cv::Rect( face.x+round(face.width/2), face.y+face.height+moodPos+1, round(face.width/2)-1, 10 );
+            cv::Rect moodRed    = cv::Rect( face.x+1, face.y+face.height+moodPos+1, round(face.width/2), 10 );
+            cv::rectangle( frame, moodBorder, cv::Scalar(255,255,255), CV_FILLED );
+            cv::rectangle( frame, moodRed,    cv::Scalar(0,0,255),     CV_FILLED );
+            cv::rectangle( frame, moodGreen,  cv::Scalar(0,255,0),     CV_FILLED );
 
-            cv::putText(frame, "MOOD", cv::Point(face.x+3, face.y+10),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0,0,0));
+            cv::putText(frame, "MOOD", cv::Point(face.x+3, face.y+face.height+moodPos+8),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
 
+            // SHOW GENDER BAR
+            int genderPos = 2;
+            cv::Rect genderBorder = cv::Rect( face.x, face.y+face.height+genderPos, round(face.width/2) + round(face.width/2), 12 );
+            cv::rectangle( frame, genderBorder,cv::Scalar(255,255,255), CV_FILLED );
+
+            cv::Rect genderBlue = cv::Rect( face.x+1, face.y+face.height + genderPos + 1, round(face.width/2), 10 );
+            cv::rectangle( frame, genderBlue,cv::Scalar(255,55,55), CV_FILLED);
+
+            cv::Rect genderPink = cv::Rect( face.x+round(face.width/2), face.y + face.height + genderPos + 1, round(face.width/2)-1, 10);
+            cv::rectangle( frame, genderPink, cv::Scalar(147,20,255), CV_FILLED );
+
+            cv::putText(frame, "GENDER", cv::Point( face.x+3, face.y+face.height+genderPos+8 ),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
+
+
+            // Draw a rectangle around person's face on the current frame
+            cv::rectangle(frame, face, cv::Scalar(255,255,255), 1);
+
+            // Draw the continuous measure of mood
             float moodValue = person.getMood();
             moodValue+=2; //make non negative
             if (moodValue<0.) moodValue=0.;
             if (moodValue>4.) moodValue=4.;
             moodValue /=4; // normalize between 0 and 1
 
-            // SHOW GENDER BAR
-            cv::Rect genderBlue = cv::Rect(face.x+3,face.y+face.height-13,round(face.width/2),10);
-            cv::rectangle(frame,genderBlue,cv::Scalar(255,55,55),CV_FILLED);
-            cv::Rect genderPink = cv::Rect(face.x+round(face.width/2),face.y+face.height-13,round(face.width/2)-1,10);
-            cv::rectangle(frame,genderPink,cv::Scalar(147,20,255),CV_FILLED);
-
-            cv::putText(frame, "GENDER", cv::Point(face.x+3, face.y+face.height-6),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0,0,0));
-
-
-            //Draw a rectangle around person's face on the current frame
-            //      cv::rectangle(frame, face, colors[person.getID()%8], 3);
-
-
-            cv::Rect theMood = cv::Rect(face.x+round(face.width*moodValue),face.y+3,3,10);
+            cv::Rect theMood           = cv::Rect( face.x+round(face.width*moodValue),   face.y+face.height+moodPos+1, 3, 10 );
+            cv::Rect theMoodInnerWhite = cv::Rect( face.x+round(face.width*moodValue)+1, face.y+face.height+moodPos+2, 1,  8 );
             cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
-            cv::Rect theMoodInnerWhite = cv::Rect(face.x+round(face.width*moodValue)+1,face.y+4,1,8);
             cv::rectangle(frame,theMoodInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
 
+            // Draw the continuous measure of gender
             float genderValue = (person.getGender() + 1) / 2.;
-            cv::Rect theGender = cv::Rect(face.x+round(face.width*genderValue),face.y+face.height-13,3,10);
+            cv::Rect theGender           = cv::Rect( face.x+round(face.width*genderValue)  , face.y+face.height+genderPos+1, 3, 10 );
+            cv::Rect theGenderInnerWhite = cv::Rect( face.x+round(face.width*genderValue)+1, face.y+face.height+genderPos+2, 1,  8 );
             cv::rectangle(frame,theGender,cv::Scalar(0,0,0),CV_FILLED);
-            cv::Rect theGenderInnerWhite = cv::Rect(face.x+round(face.width*genderValue)+1,face.y+face.height-12,1,8);
             cv::rectangle(frame,theGenderInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
 
             // visualize head pose
             // for this purpose, yaw and pitch are normalized in [0...1] by HeadPose
             float yawValue = 1 - person.getYaw();
             float pitchValue = person.getPitch();
-            cv::line(frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), colors[person.getID()%8],2);
+            cv::line(frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), cv::Scalar(255,255,255),2);
 
 
 #if RECORDING
