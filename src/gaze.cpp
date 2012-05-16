@@ -101,15 +101,15 @@ int main (int argc, char *argv[])
     };
 
 
-    std::ofstream storeFile;
-    std::ostringstream fileName;
-    fileName << "outputData_" << time(NULL) << ".csv";
-    storeFile.open (fileName.str().c_str(), std::ios::out | std::ios::app);
+//    std::ofstream storeFile;
+//    std::ostringstream fileName;
+//    fileName << "outputData_" << time(NULL) << ".csv";
+//    storeFile.open (fileName.str().c_str(), std::ios::out | std::ios::app);
 
-    std::ofstream storeFileBinned;
-    std::ostringstream fileNameBinned;
-    fileNameBinned << "outputData_" << time(NULL) << "_binned.csv";
-    storeFileBinned.open (fileNameBinned.str().c_str(), std::ios::out | std::ios::app);
+//    std::ofstream storeFileBinned;
+//    std::ostringstream fileNameBinned;
+//    fileNameBinned << "outputData_" << time(NULL) << "_binned.csv";
+//    storeFileBinned.open (fileNameBinned.str().c_str(), std::ios::out | std::ios::app);
 
     int outputBinSizeInMiliSec = 10000;
     int endTimePreviousBin     = 0;
@@ -132,9 +132,9 @@ int main (int argc, char *argv[])
 
     cap >> frame;
 
-    std::ostringstream videoName;
-    videoName << "outputVideo_" << time(NULL) << ".avi"; //videoName.str().c_str()
-    cv::VideoWriter videoOutput(videoName.str().c_str(), CV_FOURCC('D','I','V','X'), 5, frame.size());
+//    std::ostringstream videoName;
+//    videoName << "outputVideo_" << time(NULL) << ".avi"; //videoName.str().c_str()
+//    cv::VideoWriter videoOutput(videoName.str().c_str(), CV_FOURCC('D','I','V','X'), 5, frame.size());
 
     //Start main processing loop
     while(true)
@@ -229,6 +229,7 @@ int main (int argc, char *argv[])
             //Get person's ID and other features and draw it in the face rectangle
             std::ostringstream id_string;
             id_string << "ID #" << person.getID();
+            id_string << " / " << person.getPredatorID();
             std::ostringstream age_string;
             age_string << "Age: " << person.getAge();
 
@@ -286,9 +287,9 @@ int main (int argc, char *argv[])
 
 
             //store to csv...
-            storeFile << frameCount << "," << person.getID() << "," << person.getTime() << "," << person.getAge() << "," << person.getGender() << ","
-                      << person.getFaceRect().x << "," << person.getFaceRect().y << "," << person.getFaceRect().width << ","
-                      << person.getYaw() << "," << person.getPitch() << "\n";
+//            storeFile << frameCount << "," << person.getID() << "," << person.getTime() << "," << person.getAge() << "," << person.getGender() << ","
+//                      << person.getFaceRect().x << "," << person.getFaceRect().y << "," << person.getFaceRect().width << ","
+//                      << person.getYaw() << "," << person.getPitch() << "\n";
 
 
 
@@ -301,11 +302,11 @@ int main (int argc, char *argv[])
                 endTimePreviousBin = person.getTime();
 
                 //store to csv...
-                storeFileBinned << binCounter    << "," << uniqueIDsInOutput.size() << "," << newIDsThisBin.size() << "," << perseus.getPeopleCount() << "," << perseus.getPeopleCount()-lastBinsPeopleCounter << ","
-                                << ages.at(0)    << "," << ages.at(1)    << "," << ages.at(2)    << "," << ages.at(3) << ","
-                                << genders.at(0) << "," << genders.at(1) << ","
-                                << yaws.at(0)    << "," << yaws.at(1)    << "," << yaws.at(2)    << ","
-                                << pitches.at(0) << "," << pitches.at(1) << "," << pitches.at(2) << ","  << "\n";
+//                storeFileBinned << binCounter    << "," << uniqueIDsInOutput.size() << "," << newIDsThisBin.size() << "," << perseus.getPeopleCount() << "," << perseus.getPeopleCount()-lastBinsPeopleCounter << ","
+//                                << ages.at(0)    << "," << ages.at(1)    << "," << ages.at(2)    << "," << ages.at(3) << ","
+//                                << genders.at(0) << "," << genders.at(1) << ","
+//                                << yaws.at(0)    << "," << yaws.at(1)    << "," << yaws.at(2)    << ","
+//                                << pitches.at(0) << "," << pitches.at(1) << "," << pitches.at(2) << ","  << "\n";
 
                 ages.at(0)    = 0;
                 ages.at(1)    = 0;
@@ -354,8 +355,8 @@ int main (int argc, char *argv[])
         if (people.size()==0)
         {
             // when no people are recognized in a frame, store zeros so the csv file will be synchronous with the video
-            storeFile << frameCount << "," << "0" << "," << "0" << "," << "0" << "," << "0" << ","
-                      << "0" << "," << "0" << "," << "0" << "," << "0" << "," << "0" << "\n";
+//            storeFile << frameCount << "," << "0" << "," << "0" << "," << "0" << "," << "0" << ","
+//                      << "0" << "," << "0" << "," << "0" << "," << "0" << "," << "0" << "\n";
         }
 
 
@@ -377,7 +378,7 @@ int main (int argc, char *argv[])
 
         cv::imshow(HUMAN_NAME, frame);
 
-        videoOutput << frame;
+//        videoOutput << frame;
 
         //    cv::waitKey();
 
@@ -385,7 +386,7 @@ int main (int argc, char *argv[])
         char key = cv::waitKey(1);
         if (key == 'q')
         {
-            storeFile.close();
+//            storeFile.close();
 
             break;
         }
