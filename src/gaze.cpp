@@ -130,7 +130,7 @@ int main (int argc, char *argv[])
 
 
     //If desirable skips of a video can be skipped.
-    int processEveryNthFrame = 1;
+    int processEveryNthFrame = 3;
     // keep track of how many frames are processed
     int frameCount           = 0;
 
@@ -146,9 +146,12 @@ int main (int argc, char *argv[])
     while(true)
     {
         frameCount++;
-
+        if (frameCount % processEveryNthFrame == 0 && frameCount>0)
+        {
         //Grab a frame
-        cap >> frame;
+            cap >> frame;
+        }else
+            continue;
 
 
         //If frame is empty break
@@ -158,14 +161,14 @@ int main (int argc, char *argv[])
         }
 
 
-        //    if (frameCount<=8000)
-        //    {
-        //        if (frameCount % 250 == 0)
-        //        {
-        //            std::cout << "framecount: " << frameCount << std::endl;
-        //        }
-        //        continue;
-        //    }
+//            if (frameCount<=8000)
+//            {
+//                if (frameCount % 250 == 0)
+//                {
+//                    std::cout << "framecount: " << frameCount << std::endl;
+//                }
+//                continue;
+//            }
 
         //Flip frame if capturing from webcam
         if (is_webcam_input)
@@ -193,13 +196,12 @@ int main (int argc, char *argv[])
         //must be called before getCurrentPeople();
 
 
-        if (frameCount % processEveryNthFrame == 0 && frameCount>0)
+
+        if (!perseus.process(frame))
         {
-            if (!perseus.process(frame))
-            {
-                std::cerr << perseus.getErrorDescription() << std::endl;
-            }
+            std::cerr << perseus.getErrorDescription() << std::endl;
         }
+
 
         //Get the list of people in the current frame
         std::vector<Person> people;
@@ -234,9 +236,12 @@ int main (int argc, char *argv[])
 
             //Get person's ID and other features and draw it in the face rectangle
             std::ostringstream id_string;
-            id_string << "ID #" << person.getID();
+            id_string << "ID #" << person.getID() << " / " << person.getPredatorID();
             std::ostringstream age_string;
-            age_string << "Age: " << person.getAge();
+            age_string << "Age: ";
+            int age = person.getAge();
+            if (age == 0) age_string << "?";
+            else          age_string << age;
 
             cv::putText(frame, id_string.str(), cv::Point(face.x+3, face.y+14),
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
