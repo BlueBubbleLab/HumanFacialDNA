@@ -234,7 +234,7 @@ int main (int argc, char *argv[])
 
             //Get person's ID and other features and draw it in the face rectangle
             std::ostringstream id_string;
-            id_string << "ID #" << person.getID(); // << "/" << person.getPredatorID();
+            id_string << "ID #" << person.getID() << "/" << person.getPredatorID();
             std::ostringstream age_string;
             age_string << "Age: " << person.getAge();
 
