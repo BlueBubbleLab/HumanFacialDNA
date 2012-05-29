@@ -238,10 +238,16 @@ int main (int argc, char *argv[])
             std::ostringstream age_string;
             age_string << "Age: " << person.getAge();
 
+            //Get person's attention span. This value is returned in milliseconds
+            std::ostringstream attention_string;
+            attention_string << "Attention: " << ( person.getAttentionSpan() / 1000 );
+
             cv::putText(frame, id_string.str(), cv::Point(face.x+3, face.y+14),
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
             cv::putText(frame, age_string.str(), cv::Point(face.x+3, face.y+34),
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
+            cv::putText(frame, attention_string.str(), cv::Point(face.x+3, face.y + face.height-4),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,255,255));
 
             // SHOW MOOD BAR
             float moodValue = (person.getMood()+1.)/2.;
