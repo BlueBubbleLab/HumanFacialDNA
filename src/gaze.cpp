@@ -294,9 +294,9 @@ int main (int argc, char *argv[])
 //            cv::rectangle(frame,theGenderInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
 
             // visualize head pose
-            // for this purpose, yaw and pitch are normalized in [0...1] by HeadPose
-            float yawValue = 1 - person.getYaw();
-            float pitchValue = person.getPitch();
+            // for this purpose, yaw and pitch are normalized in [-1...1] by HeadPose
+            float yawValue = 1 - ((person.getYaw()+1.)/2.);
+            float pitchValue = (person.getPitch()+1.)/2.;
             cv::line(frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), cv::Scalar(255,255,255), 2);
 
 
