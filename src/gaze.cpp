@@ -295,8 +295,8 @@ int main (int argc, char *argv[])
 
             // visualize head pose
             // for this purpose, yaw and pitch are normalized in [-1...1] by HeadPose
-            float yawValue = 1 - ((person.getYaw()+1.)/2.);
-            float pitchValue = (person.getPitch()+1.)/2.;
+            float yawValue = 1 - ((person.getHeadYaw()+1.)/2.);
+            float pitchValue = (person.getHeadPitch()+1.)/2.;
             cv::line(frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), cv::Scalar(255,255,255), 2);
 
 
@@ -304,7 +304,7 @@ int main (int argc, char *argv[])
             //store to csv...
             storeFile << frameCount << "," << person.getID() << "," << person.getTime() << "," << person.getAge() << "," << person.getGender() << ","
                       << person.getFaceRect().x << "," << person.getFaceRect().y << "," << person.getFaceRect().width << ","
-                      << person.getYaw() << "," << person.getPitch() << "\n";
+                      << person.getHeadYaw() << "," << person.getHeadPitch() << "\n";
 
 
             if (person.getTime()-endTimePreviousBin > outputBinSizeInMiliSec)
