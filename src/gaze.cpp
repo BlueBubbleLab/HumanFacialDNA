@@ -5,11 +5,11 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
-#include "../Perseus/src/perseus.h"
+#include "../CrowdSight/src/crowdsight.h"
 #include "demo_version.h"
 
 #ifndef HUMAN_NAME
-#define HUMAN_NAME "Perseus Demo"
+#define HUMAN_NAME "CrowdSight Demo"
 #endif
 
 #define RECORDING 0
@@ -72,13 +72,13 @@ int main (int argc, char *argv[])
         return -1;
     }
 
-    //Create perseus instance
-    Perseus perseus(data_dir);
+    //Create crowdsight instance
+    CrowdSight crowdsight(data_dir);
 
-    //Authenticate perseus instance
-    if (!perseus.authenticate(auth_key))
+    //Authenticate crowdsight instance
+    if (!crowdsight.authenticate(auth_key))
     {
-        std::cerr << perseus.getErrorDescription() << std::endl;
+        std::cerr << crowdsight.getErrorDescription() << std::endl;
         return -1;
     }
 
@@ -188,24 +188,24 @@ int main (int argc, char *argv[])
         frame = frame(roi);
 
 
-        //Use perseus instance to procees current frame.
+        //Use crowdsight instance to procees current frame.
         //Process function evaluates the frames contents and
         //must be called before getCurrentPeople();
 
 
         if (frameCount % processEveryNthFrame == 0 && frameCount>0)
         {
-            if (!perseus.process(frame))
+            if (!crowdsight.process(frame))
             {
-                std::cerr << perseus.getErrorDescription() << std::endl;
+                std::cerr << crowdsight.getErrorDescription() << std::endl;
             }
         }
 
         //Get the list of people in the current frame
         std::vector<Person> people;
-        if (!perseus.getCurrentPeople(people))
+        if (!crowdsight.getCurrentPeople(people))
         {
-            std::cerr << perseus.getErrorDescription() << std::endl;
+            std::cerr << crowdsight.getErrorDescription() << std::endl;
         }
 
         //For each person in the frame, do:
@@ -313,7 +313,7 @@ int main (int argc, char *argv[])
                 endTimePreviousBin = person.getTime();
 
                 //store to csv...
-                storeFileBinned << binCounter    << "," << uniqueIDsInOutput.size() << "," << newIDsThisBin.size() << "," << perseus.getPeopleCount() << "," << perseus.getPeopleCount()-lastBinsPeopleCounter << ","
+                storeFileBinned << binCounter    << "," << uniqueIDsInOutput.size() << "," << newIDsThisBin.size() << "," << crowdsight.getPeopleCount() << "," << crowdsight.getPeopleCount()-lastBinsPeopleCounter << ","
                                 << ages.at(0)    << "," << ages.at(1)    << "," << ages.at(2)    << "," << ages.at(3) << ","
                                 << genders.at(0) << "," << genders.at(1) << ","
                                 << yaws.at(0)    << "," << yaws.at(1)    << "," << yaws.at(2)    << ","
@@ -337,7 +337,7 @@ int main (int argc, char *argv[])
 
                 newIDsThisBin.clear();
 
-                lastBinsPeopleCounter = perseus.getPeopleCount();
+                lastBinsPeopleCounter = crowdsight.getPeopleCount();
 
             }
 
@@ -382,7 +382,7 @@ int main (int argc, char *argv[])
         peopleCounter_string << "People counter: ";
         cv::putText(frame, peopleCounter_string.str(), cv::Point(3, 13),cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0),2);
         std::ostringstream peopleCounterNR_string;
-        peopleCounterNR_string << perseus.getPeopleCount();
+        peopleCounterNR_string << crowdsight.getPeopleCount();
         cv::putText(frame, peopleCounterNR_string.str(), cv::Point(50, 40),cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0),2);
         //Show processed frame
 

@@ -1,11 +1,11 @@
-PROJECT(PERSEUS_DEMO)
+PROJECT(CROWDSIGHT_DEMO)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 #-------------------------------------------------------------------------------
 # General Settings
 #-------------------------------------------------------------------------------
 SET(CMAKE_COLOR_MAKEFILE ON)
-SET(CMAKE_MODULE_PATH "${PERSEUS_DEMO_SOURCE_DIR}/cmake/modules")
+SET(CMAKE_MODULE_PATH "${CROWDSIGHT_DEMO_SOURCE_DIR}/cmake/modules")
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
     SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
@@ -46,7 +46,7 @@ ENDIF ()
 #-------------------------------------------------------------------------------
 # Extract and set the version
 #-------------------------------------------------------------------------------
-SET(PRODUCT "PerseusDemo")
+SET(PRODUCT "CrowdSightDemo")
 
 FIND_PACKAGE(Git REQUIRED)
 
@@ -74,8 +74,8 @@ EXECUTE_PROCESS(
 )
 
 CONFIGURE_FILE(
-    "${PERSEUS_DEMO_SOURCE_DIR}/cmake/demo_version.h.in"
-    "${PERSEUS_DEMO_BINARY_DIR}/demo_version.h"
+    "${CROWDSIGHT_DEMO_SOURCE_DIR}/cmake/demo_version.h.in"
+    "${CROWDSIGHT_DEMO_BINARY_DIR}/demo_version.h"
 )
 
 #-------------------------------------------------------------------------------
@@ -105,16 +105,16 @@ ENDIF (WIN32)
 # Include sources
 #-------------------------------------------------------------------------------
 INCLUDE(cmake/sources.cmake)
-INCLUDE_DIRECTORIES(${PERSEUS_DEMO_BINARY_DIR})
+INCLUDE_DIRECTORIES(${CROWDSIGHT_DEMO_BINARY_DIR})
 
 #-------------------------------------------------------------------------------
 # Add InSight subproject
 #-------------------------------------------------------------------------------
-SET(PERSEUS_STANDALONE TRUE) #Don't pass product id to perseus
-ADD_SUBDIRECTORY(${PERSEUS_DEMO_SOURCE_DIR}/Perseus perseus)
-INCLUDE_DIRECTORIES(${PERSEUS_SOURCE_DIR}/src)
-LINK_DIRECTORIES(${PERSEUS_BINARY_DIR})
-FILE(COPY ${PERSEUS_SOURCE_DIR}/data DESTINATION ${PERSEUS_DEMO_BINARY_DIR})
+SET(CROWDSIGHT_STANDALONE TRUE) #Don't pass product id to crowdsight
+ADD_SUBDIRECTORY(${CROWDSIGHT_DEMO_SOURCE_DIR}/CrowdSight crowdsight)
+INCLUDE_DIRECTORIES(${CROWDSIGHT_SOURCE_DIR}/src)
+LINK_DIRECTORIES(${CROWDSIGHT_BINARY_DIR})
+FILE(COPY ${CROWDSIGHT_SOURCE_DIR}/data DESTINATION ${CROWDSIGHT_DEMO_BINARY_DIR})
 
 #-------------------------------------------------------------------------------
 # Include 3rd party library headers
@@ -132,7 +132,7 @@ ELSE(OSX)
     ADD_EXECUTABLE(${TARGET_GAZE_DEMO} ${GAZE_DEMO_SOURCE})
 ENDIF(OSX)
 TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
-    perseus
+    crowdsight
     ${OpenCV_LIBS}
 )
 
@@ -145,8 +145,8 @@ IF(WIN32)
         TARGET ${TARGET_GAZE_DEMO}
         POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
-                ${PERSEUS_DEMO_BINARY_DIR}/perseus/libperseus.dll
-                ${PERSEUS_DEMO_BINARY_DIR}
+                ${CROWDSIGHT_DEMO_BINARY_DIR}/crowdsight/libcrowdsight.dll
+                ${CROWDSIGHT_DEMO_BINARY_DIR}
     )
 ENDIF()
 
@@ -159,7 +159,7 @@ IF(WIN32)
 
     INSTALL(FILES ${OpenCV_DLL_FILES} DESTINATION .)
     INSTALL(FILES ${CURL_DLL_FILES} DESTINATION .)
-    INSTALL(DIRECTORY ${PERSEUS_DEMOS_SOURCE_DIR}resources DESTINATION .)
+    INSTALL(DIRECTORY ${CROWDSIGHT_DEMOS_SOURCE_DIR}resources DESTINATION .)
     IF (MINGW)
         INSTALL(FILES ${MINGW_DLL_FILES} DESTINATION .)
     ENDIF (MINGW)
@@ -176,14 +176,14 @@ IF (OSX)
     INSTALL(TARGETS ${TARGET_GAZE_DEMO} BUNDLE DESTINATION . COMPONENT Runtime)
 
     # Install resources and set icon
-    INSTALL(FILES "${PERSEUS_DEMO_SOURCE_DIR}/resources/icons/thirdsight.icns" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
-    INSTALL(DIRECTORY "${PERSEUS_SOURCE_DIR}/data" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+    INSTALL(FILES "${CROWDSIGHT_DEMO_SOURCE_DIR}/resources/icons/thirdsight.icns" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+    INSTALL(DIRECTORY "${CROWDSIGHT_SOURCE_DIR}/data" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
 
     # Set aliases for plugin and resource dir
     SET(plugin_dest_dir ${TARGET_GAZE_DEMO}.app/Contents/MacOS)
 
-    # Set perseus dependency directory
-    SET(DIRS ${CMAKE_CURRENT_BINARY_DIR}/perseus/)
+    # Set crowdsight dependency directory
+    SET(DIRS ${CMAKE_CURRENT_BINARY_DIR}/crowdsight/)
 
 
     INSTALL(CODE "
