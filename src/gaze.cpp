@@ -248,13 +248,13 @@ int main (int argc, char *argv[])
 
             // SHOW MOOD BAR
             float moodValue = (person.getMood()+1.)/2.;
-            int moodPos = 16;
-            cv::Rect moodBorder = cv::Rect( face.x, face.y+face.height+moodPos, round(face.width/2)+round(face.width/2), 12 );
-            cv::Rect moodRed  = cv::Rect( floor(face.x+moodValue*face.width+2), face.y+face.height+moodPos+1, floor((1.-moodValue)*face.width-2)-1, 10 );
-            cv::Rect moodGreen    = cv::Rect( face.x+2, face.y+face.height+moodPos+1, moodValue*face.width, 10 );
-            cv::rectangle( frame, moodBorder, cv::Scalar(255,255,255), CV_FILLED );
-            cv::rectangle( frame, moodRed,    cv::Scalar(0,0,255),     CV_FILLED );
-            cv::rectangle( frame, moodGreen,  cv::Scalar(0,255,0),     CV_FILLED );
+            int moodPos     = 16;
+            cv::Rect moodBorder = cv::Rect(face.x                                  , face.y + face.height + moodPos    , face.width                                  , 12 );
+            cv::Rect moodRed    = cv::Rect(face.x + floor(moodValue*face.width) + 1, face.y + face.height + moodPos + 1, face.width - floor(moodValue*face.width) - 1, 10 );
+            cv::Rect moodGreen  = cv::Rect(face.x + 1                              , face.y + face.height + moodPos + 1, moodValue * face.width -1                     , 10 );
+            cv::rectangle( frame, moodRed   , cv::Scalar(0,0,255)    , CV_FILLED );
+            cv::rectangle( frame, moodGreen , cv::Scalar(0,255,0)    , CV_FILLED );
+            cv::rectangle( frame, moodBorder, cv::Scalar(255,255,255), 1 );
 
             cv::putText(frame, "MOOD", cv::Point(face.x+3, face.y+face.height+moodPos+8),
                         cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
@@ -262,17 +262,48 @@ int main (int argc, char *argv[])
             // SHOW GENDER BAR
             float genderValue = (person.getGender() + 1) / 2.;
             int genderPos = 2;
-            cv::Rect genderBorder = cv::Rect( face.x, face.y+face.height+genderPos, round(face.width/2) + round(face.width/2), 12 );
-            cv::rectangle( frame, genderBorder,cv::Scalar(255,255,255), CV_FILLED );
 
-            cv::Rect genderBlue = cv::Rect( face.x+2, face.y+face.height + genderPos + 1, (1.-genderValue)*face.width, 10 );
+
+            cv::Rect genderBorder = cv::Rect(face.x                                  , face.y + face.height + genderPos    , face.width                                  , 12 );
+            cv::Rect genderBlue   = cv::Rect(face.x + floor(genderValue*face.width) + 1, face.y + face.height + genderPos + 1, face.width - floor(genderValue*face.width) - 1, 10 );
+            cv::Rect genderPink   = cv::Rect(face.x + 1                              , face.y + face.height + genderPos + 1, genderValue * face.width -1                     , 10 );
+
             cv::rectangle( frame, genderBlue,cv::Scalar(255,55,55), CV_FILLED);
-
-            cv::Rect genderPink = cv::Rect( floor(face.x+(1.-genderValue)*face.width+2), face.y + face.height + genderPos + 1, floor(genderValue*face.width-1)-2, 10);
             cv::rectangle( frame, genderPink, cv::Scalar(147,20,255), CV_FILLED );
+            cv::rectangle( frame, genderBorder,cv::Scalar(255,255,255), 1 );
 
             cv::putText(frame, "GENDER", cv::Point( face.x+3, face.y+face.height+genderPos+8 ),
                         cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
+
+
+
+            // SHOW AGE BAR
+            float ageValue = person.getAge();
+            if (ageValue > 80) {ageValue=80;}
+            double agePerc = ((double)ageValue/80.0);
+            int ageLocInBar = (int)(face.width*agePerc);
+            int agePos = 30;
+            int ageBlock = (int)face.width/4;
+
+            cv::Rect ageBorder     = cv::Rect( face.x                   , face.y+face.height+agePos  , round(face.width/2) + round(face.width/2), 12 );
+            cv::Rect ageGreen      = cv::Rect( face.x + 1               , face.y+face.height+agePos+1, ageBlock, 10 );
+            cv::Rect ageOrange     = cv::Rect( face.x + 1 +    ageBlock , face.y+face.height+agePos+1, ageBlock, 10 );
+            cv::Rect ageBlue       = cv::Rect( face.x + 1 + (2*ageBlock), face.y+face.height+agePos+1, ageBlock, 10 );
+            cv::Rect ageGrey       = cv::Rect( face.x + 1 + (3*ageBlock), face.y+face.height+agePos+1, ageBlock, 10 );
+            cv::Rect ageIndicatorB = cv::Rect( face.x + 1 + ageLocInBar - 1, face.y+face.height+agePos+1, 4, 10 );
+            cv::Rect ageIndicatorW = cv::Rect( face.x + 1 + ageLocInBar    , face.y+face.height+agePos+1, 2, 10 );
+
+            cv::rectangle( frame, ageGreen     , cv::Scalar(50,205,50)   , CV_FILLED );
+            cv::rectangle( frame, ageOrange    , cv::Scalar(249,77,0)    , CV_FILLED );
+            cv::rectangle( frame, ageBlue      , cv::Scalar(0,102,255)   , CV_FILLED );
+            cv::rectangle( frame, ageGrey      , cv::Scalar(126,126,126) , CV_FILLED );
+            cv::rectangle( frame, ageIndicatorB, cv::Scalar(0,0,0)       , CV_FILLED );
+            cv::rectangle( frame, ageIndicatorW, cv::Scalar(255,255,255) , CV_FILLED );
+            cv::rectangle( frame, ageBorder    , cv::Scalar(255,255,255) , 1 );
+
+
+//            cv::putText(frame, "AGE", cv::Point(face.x+3, face.y+face.height+moodPos+8),
+//                        cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(255, 255, 255));
 
 
             // Draw a rectangle around person's face on the current frame
