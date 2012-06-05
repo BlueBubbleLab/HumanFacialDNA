@@ -184,9 +184,6 @@ int main (int argc, char *argv[])
         roi.y      = marginTop;                     // pixels to skip from the top
         roi.width  = frame.cols-roi.x-marginRight;  // width of roi
         roi.height = frame.rows-roi.y-marginBottom; // height of roi
-        // extract roi from frame and continue with that part of the frame only
-        frame = frame(roi);
-
 
         //Use crowdsight instance to procees current frame.
         //Process function evaluates the frames contents and
@@ -195,7 +192,7 @@ int main (int argc, char *argv[])
 
         if (frameCount % processEveryNthFrame == 0 && frameCount>0)
         {
-            if (!crowdsight.process(frame))
+            if (!crowdsight.process(frame, roi))
             {
                 std::cerr << crowdsight.getErrorDescription() << std::endl;
             }
