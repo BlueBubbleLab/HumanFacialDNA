@@ -232,8 +232,8 @@ int main (int argc, char *argv[])
             //Get person's ID and other features and draw it in the face rectangle
             std::ostringstream id_string;
             id_string << "ID #" << person.getID() << "/" << person.getPredatorID();
-            std::ostringstream age_string;
-            age_string << "Age: " << person.getAge();
+//            std::ostringstream age_string;
+//            age_string << "Age: " << person.getAge();
 
             //Get person's attention span. This value is returned in milliseconds
             std::ostringstream attention_string;
@@ -241,8 +241,8 @@ int main (int argc, char *argv[])
 
             cv::putText(frame, id_string.str(), cv::Point(face.x+3, face.y+14),
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
-            cv::putText(frame, age_string.str(), cv::Point(face.x+3, face.y+34),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
+//            cv::putText(frame, age_string.str(), cv::Point(face.x+3, face.y+34),
+//                        cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
             cv::putText(frame, attention_string.str(), cv::Point(face.x+3, face.y + face.height-4),
                         cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,255,255));
 
@@ -265,8 +265,8 @@ int main (int argc, char *argv[])
 
 
             cv::Rect genderBorder = cv::Rect(face.x                                  , face.y + face.height + genderPos    , face.width                                  , 12 );
-            cv::Rect genderBlue   = cv::Rect(face.x + floor(genderValue*face.width) + 1, face.y + face.height + genderPos + 1, face.width - floor(genderValue*face.width) - 1, 10 );
-            cv::Rect genderPink   = cv::Rect(face.x + 1                              , face.y + face.height + genderPos + 1, genderValue * face.width -1                     , 10 );
+            cv::Rect genderPink   = cv::Rect(face.x + floor(genderValue*face.width) + 1, face.y + face.height + genderPos + 1, face.width - floor(genderValue*face.width) - 1, 10 );
+            cv::Rect genderBlue   = cv::Rect(face.x + 1                              , face.y + face.height + genderPos + 1, genderValue * face.width -1                     , 10 );
 
             cv::rectangle( frame, genderBlue,cv::Scalar(255,55,55), CV_FILLED);
             cv::rectangle( frame, genderPink, cv::Scalar(147,20,255), CV_FILLED );
