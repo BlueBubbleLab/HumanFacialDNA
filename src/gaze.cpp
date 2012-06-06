@@ -264,9 +264,9 @@ int main (int argc, char *argv[])
             int genderPos = 2;
 
 
-            cv::Rect genderBorder = cv::Rect(face.x                                  , face.y + face.height + genderPos    , face.width                                  , 12 );
-            cv::Rect genderPink   = cv::Rect(face.x + floor(genderValue*face.width) + 1, face.y + face.height + genderPos + 1, face.width - floor(genderValue*face.width) - 1, 10 );
-            cv::Rect genderBlue   = cv::Rect(face.x + 1                              , face.y + face.height + genderPos + 1, genderValue * face.width -1                     , 10 );
+            cv::Rect genderBorder = cv::Rect(face.x                                  , face.y + face.height + genderPos    , face.width                             , 12 );
+            cv::Rect genderPink   = cv::Rect(face.x + floor((1-genderValue)*face.width) + 1, face.y + face.height + genderPos + 1, floor(genderValue*face.width) - 1, 10 );
+            cv::Rect genderBlue   = cv::Rect(face.x + 1                              , face.y + face.height + genderPos + 1, (1-genderValue) * face.width -1        , 10 );
 
             cv::rectangle( frame, genderBlue,cv::Scalar(255,55,55), CV_FILLED);
             cv::rectangle( frame, genderPink, cv::Scalar(147,20,255), CV_FILLED );
