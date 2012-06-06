@@ -231,7 +231,8 @@ int main (int argc, char *argv[])
 
             //Get person's ID and other features and draw it in the face rectangle
             std::ostringstream id_string;
-            id_string << "ID #" << person.getID() << "/" << person.getPredatorID();
+            int id = person.getID();
+            id_string << "ID #" << id << "/" << person.getPredatorID();
 //            std::ostringstream age_string;
 //            age_string << "Age: " << person.getAge();
 
@@ -239,12 +240,18 @@ int main (int argc, char *argv[])
             std::ostringstream attention_string;
             attention_string << "Attention: " << ( person.getAttentionSpan() / 1000 );
 
-            cv::putText(frame, id_string.str(), cv::Point(face.x+3, face.y+14),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
+            cv::putText(frame, id_string.str(), cv::Point(face.x+3, face.y+face.height-30),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.4, colors[id % 8]);
 //            cv::putText(frame, age_string.str(), cv::Point(face.x+3, face.y+34),
 //                        cv::FONT_HERSHEY_SIMPLEX, 0.5, colors[person.getID()%8]);
             cv::putText(frame, attention_string.str(), cv::Point(face.x+3, face.y + face.height-4),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255,255,255));
+                        cv::FONT_HERSHEY_SIMPLEX, 0.4, colors[id % 8]);
+
+            float ageValue = person.getAge();
+            std::ostringstream age_string;
+            age_string << "Age: " << ageValue;
+            cv::putText(frame, age_string.str(), cv::Point(face.x+3, face.y+face.height-17),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.4, colors[id % 8]);
 
             // SHOW MOOD BAR
             float moodValue = (person.getMood()+1.)/2.;
@@ -278,28 +285,27 @@ int main (int argc, char *argv[])
 
 
             // SHOW AGE BAR
-            float ageValue = person.getAge();
-            if (ageValue > 80) {ageValue=80;}
-            double agePerc = ((double)ageValue/80.0);
-            int ageLocInBar = (int)(face.width*agePerc);
-            int agePos = 30;
-            int ageBlock = (int)face.width/4;
+//            if (ageValue > 80) {ageValue=80;}
+//            double agePerc = ((double)ageValue/80.0);
+//            int ageLocInBar = (int)(face.width*agePerc);
+//            int agePos = 30;
+//            int ageBlock = (int)face.width/4;
 
-            cv::Rect ageBorder     = cv::Rect( face.x                   , face.y+face.height+agePos  , round(face.width/2) + round(face.width/2), 12 );
-            cv::Rect ageGreen      = cv::Rect( face.x + 1               , face.y+face.height+agePos+1, ageBlock, 10 );
-            cv::Rect ageOrange     = cv::Rect( face.x + 1 +    ageBlock , face.y+face.height+agePos+1, ageBlock, 10 );
-            cv::Rect ageBlue       = cv::Rect( face.x + 1 + (2*ageBlock), face.y+face.height+agePos+1, ageBlock, 10 );
-            cv::Rect ageGrey       = cv::Rect( face.x + 1 + (3*ageBlock), face.y+face.height+agePos+1, ageBlock, 10 );
-            cv::Rect ageIndicatorB = cv::Rect( face.x + 1 + ageLocInBar - 1, face.y+face.height+agePos+1, 4, 10 );
-            cv::Rect ageIndicatorW = cv::Rect( face.x + 1 + ageLocInBar    , face.y+face.height+agePos+1, 2, 10 );
+//            cv::Rect ageBorder     = cv::Rect( face.x                   , face.y+face.height+agePos  , round(face.width/2) + round(face.width/2), 12 );
+//            cv::Rect ageGreen      = cv::Rect( face.x + 1               , face.y+face.height+agePos+1, ageBlock, 10 );
+//            cv::Rect ageOrange     = cv::Rect( face.x + 1 +    ageBlock , face.y+face.height+agePos+1, ageBlock, 10 );
+//            cv::Rect ageBlue       = cv::Rect( face.x + 1 + (2*ageBlock), face.y+face.height+agePos+1, ageBlock, 10 );
+//            cv::Rect ageGrey       = cv::Rect( face.x + 1 + (3*ageBlock), face.y+face.height+agePos+1, ageBlock, 10 );
+//            cv::Rect ageIndicatorB = cv::Rect( face.x + 1 + ageLocInBar - 1, face.y+face.height+agePos+1, 4, 10 );
+//            cv::Rect ageIndicatorW = cv::Rect( face.x + 1 + ageLocInBar    , face.y+face.height+agePos+1, 2, 10 );
 
-            cv::rectangle( frame, ageGreen     , cv::Scalar(50,205,50)   , CV_FILLED );
-            cv::rectangle( frame, ageOrange    , cv::Scalar(249,77,0)    , CV_FILLED );
-            cv::rectangle( frame, ageBlue      , cv::Scalar(0,102,255)   , CV_FILLED );
-            cv::rectangle( frame, ageGrey      , cv::Scalar(126,126,126) , CV_FILLED );
-            cv::rectangle( frame, ageIndicatorB, cv::Scalar(0,0,0)       , CV_FILLED );
-            cv::rectangle( frame, ageIndicatorW, cv::Scalar(255,255,255) , CV_FILLED );
-            cv::rectangle( frame, ageBorder    , cv::Scalar(255,255,255) , 1 );
+//            cv::rectangle( frame, ageGreen     , cv::Scalar(50,205,50)   , CV_FILLED );
+//            cv::rectangle( frame, ageOrange    , cv::Scalar(249,77,0)    , CV_FILLED );
+//            cv::rectangle( frame, ageBlue      , cv::Scalar(0,102,255)   , CV_FILLED );
+//            cv::rectangle( frame, ageGrey      , cv::Scalar(126,126,126) , CV_FILLED );
+//            cv::rectangle( frame, ageIndicatorB, cv::Scalar(0,0,0)       , CV_FILLED );
+//            cv::rectangle( frame, ageIndicatorW, cv::Scalar(255,255,255) , CV_FILLED );
+//            cv::rectangle( frame, ageBorder    , cv::Scalar(255,255,255) , 1 );
 
 
 //            cv::putText(frame, "AGE", cv::Point(face.x+3, face.y+face.height+moodPos+8),
