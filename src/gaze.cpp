@@ -244,7 +244,12 @@ int main ( int argc, char *argv[] )
       int64_t attentionSpan = person.getAttentionSpan();
 
       id_string        << "ID #"        << id << "/" << person.getPredatorID();
-      attention_string << "Attention: " << ( attentionSpan / 1000 );
+      // Display attention span in minutes:seconds
+      int minutes = (attentionSpan / 60000 );
+      int seconds = ( attentionSpan / 1000 ) % 60;
+      attention_string << minutes;
+      if (seconds < 10) { attention_string << ":0" << seconds; }
+      else              { attention_string << ":"  << seconds; }
 
       cv::putText( frame, id_string.str(),        cv::Point( face.x+3, idPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, colors[id % 8] );
       cv::putText( frame, attention_string.str(), cv::Point( face.x+3, attentionPos), cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
@@ -392,18 +397,20 @@ int main ( int argc, char *argv[] )
 #endif
 
     std::ostringstream peopleCounter_string;
-    peopleCounter_string << "People counter: ";
-    cv::putText(frame, peopleCounter_string.str(), cv::Point(3, 13),cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0),2);
     std::ostringstream peopleCounterNR_string;
+    peopleCounter_string   << "People counter: ";
     peopleCounterNR_string << crowdsight.getPeopleCount();
-    cv::putText(frame, peopleCounterNR_string.str(), cv::Point(50, 40),cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0),2);
+
+    cv::putText( frame, peopleCounter_string.str(),   cv::Point(3, 13),  cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0), 2 );
+    cv::putText( frame, peopleCounterNR_string.str(), cv::Point(50, 40), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0), 2 );
+
+    cv::rectangle( frame, roi, cv::Scalar(255,255,255), 1 );
+    cv::imshow( HUMAN_NAME, frame );
     //Show processed frame
 
     //    cv::Mat bigframe;
     //    cv::resize(frame,bigframe,cv::Size(1280,1024));
     //    cv::imshow(HUMAN_NAME, bigframe);
-
-    cv::imshow(HUMAN_NAME, frame);
 
 #if RECORDING
     if(!firstFrameToBeWritten)
