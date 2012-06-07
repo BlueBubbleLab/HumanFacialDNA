@@ -14,32 +14,32 @@
 
 #define RECORDING 0
 
-int main (int argc, char *argv[])
+int main ( int argc, char *argv[] )
 {
   cv::VideoCapture cap;
   std::string auth_key;
   std::string file_name;
-  std::string data_dir = "../data/";
   std::string input;
+  std::string data_dir = "../data/";
   bool is_webcam_input = false;
 
-  switch (argc)
+  switch ( argc )
   {
   case 4:
   {
     file_name = argv[1];
     data_dir  = argv[2];
-    auth_key = argv[3];
-    input = argv[1];
+    auth_key  = argv[3];
+    input     = argv[1];
     cap.open(file_name);
     break;
   }
   case 5:
   {
     file_name = argv[1];
-    if (file_name.find("--capture") != std::string::npos)
+    if ( file_name.find( "--capture" ) != std::string::npos )
     {
-      cap.open(atoi(argv[2]));
+      cap.open( atoi( argv[2] ) );
       is_webcam_input = true;
       input = argv[2];
     }
@@ -63,7 +63,7 @@ int main (int argc, char *argv[])
   }
   }
 
-  if (!cap.isOpened())  // check if we can capture from frame
+  if ( !cap.isOpened() )  // check if we can capture from frame
   {
     std::cerr
         << "Couldn't capture video from input "
@@ -73,46 +73,46 @@ int main (int argc, char *argv[])
   }
 
   //Create crowdsight instance
-  CrowdSight crowdsight(data_dir);
+  CrowdSight crowdsight( data_dir );
 
   //Authenticate crowdsight instance
-  if (!crowdsight.authenticate(auth_key))
+  if ( !crowdsight.authenticate( auth_key ) )
   {
     std::cerr << crowdsight.getErrorDescription() << std::endl;
     return -1;
   }
 
   //Setup video frame resolution
-  cap.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-  cap.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+  cap.set( CV_CAP_PROP_FRAME_WIDTH,  640 );
+  cap.set( CV_CAP_PROP_FRAME_HEIGHT, 480 );
 
   //Create an OpenCV output display window
-  cv::namedWindow(HUMAN_NAME);
+  cv::namedWindow( HUMAN_NAME );
 
   cv::Mat frame;
 
   static CvScalar colors[] =
   {
-    {{0, 0, 255}},
-    {{0, 128, 255}},
-    {{0, 255, 255}},
-    {{0, 255, 0}},
-    {{255, 128, 0}},
-    {{255, 255, 0}},
-    {{255, 0, 0}},
-    {{255, 0, 255}}
+    {{0,   0,   255}},
+    {{0,   128, 255}},
+    {{0,   255, 255}},
+    {{0,   255, 0  }},
+    {{255, 128, 0  }},
+    {{255, 255, 0  }},
+    {{255, 0,   0  }},
+    {{255, 0,   255}}
   };
 
 #if RECORDING
   std::ofstream storeFile;
   std::ostringstream fileName;
-  fileName << "outputData_" << time(NULL) << ".csv";
-  storeFile.open (fileName.str().c_str(), std::ios::out | std::ios::app);
+  fileName << "outputData_" << time( NULL ) << ".csv";
+  storeFile.open( fileName.str().c_str(), std::ios::out | std::ios::app );
 
   std::ofstream storeFileBinned;
   std::ostringstream fileNameBinned;
-  fileNameBinned << "outputData_" << time(NULL) << "_binned.csv";
-  storeFileBinned.open (fileNameBinned.str().c_str(), std::ios::out | std::ios::app);
+  fileNameBinned << "outputData_" << time( NULL ) << "_binned.csv";
+  storeFileBinned.open( fileNameBinned.str().c_str(), std::ios::out | std::ios::app );
 
   int outputBinSizeInMiliSec = 10000;
   int endTimePreviousBin     = 0;
@@ -120,10 +120,10 @@ int main (int argc, char *argv[])
   int agesBinSize            = 20;
   int lastBinsPeopleCounter  = 0;
 
-  std::vector<int> ages   (4,0);
-  std::vector<int> genders(2,0);
-  std::vector<int> yaws   (3,0);
-  std::vector<int> pitches(3,0);
+  std::vector<int> ages   ( 4, 0 );
+  std::vector<int> genders( 2, 0 );
+  std::vector<int> yaws   ( 3, 0 );
+  std::vector<int> pitches( 3, 0 );
   std::vector<int> uniqueIDsInOutput;
   std::vector<int> newIDsThisBin;
 #endif
@@ -132,24 +132,26 @@ int main (int argc, char *argv[])
   //If desirable skips of a video can be skipped.
   int processEveryNthFrame = 1;
   // keep track of how many frames are processed
-  int frameCount           = 0;
+  int frameCount = 0;
 
   cap >> frame;
 
 #if RECORDING
   std::ostringstream videoName;
-  videoName << "outputVideo_" << time(NULL) << ".avi"; //videoName.str().c_str()
-  cv::VideoWriter videoOutput(videoName.str().c_str(), CV_FOURCC('M','J','P','G'), 5, frame.size());
+  videoName << "outputVideo_" << time( NULL ) << ".avi"; //videoName.str().c_str()
+  cv::VideoWriter videoOutput( videoName.str().c_str(), CV_FOURCC('M','J','P','G'), 5, frame.size() );
   bool firstFrameToBeWritten = true;
 #endif
 
+  // Define the region of interest here
   int marginTop     = 0;
   int marginBottom  = 0;
   int marginLeft    = 0;
   int marginRight   = 0;
+  cv::Rect roi;
 
   //Start main processing loop
-  while(true)
+  while( true )
   {
     frameCount++;
 
@@ -166,30 +168,26 @@ int main (int argc, char *argv[])
     //          break;
 
     //If frame is empty break
-    if (frame.empty())
+    if ( frame.empty() )
     {
       break;
     }
 
-
     //Flip frame if capturing from webcam
-    if (is_webcam_input)
+    if ( is_webcam_input )
     {
       cv::flip(frame, frame, 1);
     }
 
-    cv::Rect roi;
     //specify the roi that will be extracted from the frame
     roi.x      = marginLeft;                    // pixels to skip from the left
     roi.y      = marginTop;                     // pixels to skip from the top
     roi.width  = frame.cols-roi.x-marginRight;  // width of roi
     roi.height = frame.rows-roi.y-marginBottom; // height of roi
 
-    //Use crowdsight instance to procees current frame.
+    //Use CrowdSight instance to proces current frame.
     //Process function evaluates the frames contents and
     //must be called before getCurrentPeople();
-
-
     if (frameCount % processEveryNthFrame == 0 && frameCount>0)
     {
       if (!crowdsight.process(frame, roi))
@@ -210,6 +208,7 @@ int main (int argc, char *argv[])
     {
       std::ostringstream id_string;
       std::ostringstream attention_string;
+
       //Get person at current index
       Person person = people.at(i);
 
@@ -227,7 +226,7 @@ int main (int argc, char *argv[])
       left_eye.y  += face.y;
 
       // Drawing positions for the components we want to display
-      int moodPos       = -face.height-11;
+      int moodPos       = -11;
       int genderPos     = 1;
       int agePos        = 12;
       int idPos         = face.y + 10;
@@ -235,48 +234,44 @@ int main (int argc, char *argv[])
 
       //Draw circles in the center of left and right eyes
       cv::circle(frame, right_eye, 3, cv::Scalar(0,255,0));
-      cv::circle(frame, left_eye, 3, cv::Scalar(0,255,0));
+      cv::circle(frame, left_eye,  3, cv::Scalar(0,255,0));
 
-      //Get person's ID and other features and draw it in the face rectangle
-
-      int id = person.getID();
-      id_string << "ID #" << id << "/" << person.getPredatorID();
-
-      //Get person's attention span. This value is returned in milliseconds
-      attention_string << "Attention: " << ( person.getAttentionSpan() / 1000 );
-
-      cv::putText( frame, id_string.str(),        cv::Point(face.x+3, idPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, colors[id % 8] );
-      cv::putText( frame, attention_string.str(), cv::Point(face.x+3, attentionPos), cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
-
+      //Get the features of a person
+      int   id       = person.getID();
       float ageValue = person.getAge();
+      float moodValue = (person.getMood()+1.)/2.;
+      //Get person's attention span. This value is returned in milliseconds
+      int64_t attentionSpan = person.getAttentionSpan();
+
+      id_string        << "ID #"        << id << "/" << person.getPredatorID();
+      attention_string << "Attention: " << ( attentionSpan / 1000 );
+
+      cv::putText( frame, id_string.str(),        cv::Point( face.x+3, idPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, colors[id % 8] );
+      cv::putText( frame, attention_string.str(), cv::Point( face.x+3, attentionPos), cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
 
       // SHOW MOOD BAR
-      float moodValue = (person.getMood()+1.)/2.;
-      cv::Rect moodBorder = cv::Rect(face.x                                  , face.y + face.height + moodPos    , face.width                                 , 10 );
-      cv::Rect moodRed    = cv::Rect(face.x + floor(moodValue*face.width) + 1, face.y + face.height + moodPos + 1, face.width - floor(moodValue*face.width) - 1, 8 );
-      cv::Rect moodGreen  = cv::Rect(face.x + 1                              , face.y + face.height + moodPos + 1, moodValue * face.width -1                   , 8 );
+      cv::Rect moodBorder = cv::Rect( face.x, face.y + moodPos, face.width, 10 );
+      cv::Rect moodRed    = cv::Rect( face.x + floor(moodValue*face.width) + 1, face.y + moodPos + 1, face.width - floor(moodValue*face.width) - 1, 8 );
+      cv::Rect moodGreen  = cv::Rect( face.x + 1, face.y + moodPos + 1, moodValue * face.width -1, 8 );
 
       cv::rectangle( frame, moodRed   , cv::Scalar(0,0,200)    , CV_FILLED );
       cv::rectangle( frame, moodGreen , cv::Scalar(0,200,0)    , CV_FILLED );
       cv::rectangle( frame, moodBorder, cv::Scalar(255,255,255), 1 );
 
-      cv::putText(frame, "MOOD", cv::Point( face.x+3, face.y+face.height+moodPos+7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
+      cv::putText( frame, "MOOD", cv::Point( face.x+3, face.y + moodPos + 7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
 
       // SHOW GENDER BAR
-      float genderValue = (person.getGender() + 1) / 2.;
+      float genderValue = ( person.getGender() + 1 ) / 2.;
 
-
-      cv::Rect genderBorder = cv::Rect(face.x                                  , face.y + face.height + genderPos    , face.width                             , 10 );
-      cv::Rect genderPink   = cv::Rect(face.x + floor((1-genderValue)*face.width) + 1, face.y + face.height + genderPos + 1, floor(genderValue*face.width) - 1, 8 );
-      cv::Rect genderBlue   = cv::Rect(face.x + 1                              , face.y + face.height + genderPos + 1, (1-genderValue) * face.width -1        , 8 );
+      cv::Rect genderBorder = cv::Rect( face.x, face.y + face.height + genderPos, face.width, 10 );
+      cv::Rect genderPink   = cv::Rect( face.x + floor((1-genderValue)*face.width) + 1, face.y + face.height + genderPos + 1, floor(genderValue*face.width) - 1, 8 );
+      cv::Rect genderBlue   = cv::Rect( face.x + 1, face.y + face.height + genderPos + 1, (1-genderValue) * face.width -1, 8 );
 
       cv::rectangle( frame, genderBlue,cv::Scalar(230,54,0), CV_FILLED);
       cv::rectangle( frame, genderPink, cv::Scalar(147,20,255), CV_FILLED );
       cv::rectangle( frame, genderBorder,cv::Scalar(255,255,255), 1 );
 
-      cv::putText(frame, "GENDER", cv::Point( face.x+3, face.y+face.height+genderPos+7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255));
-
-
+      cv::putText( frame, "GENDER", cv::Point( face.x+3, face.y+face.height+genderPos+7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255));
 
       // SHOW AGE BAR
       if (ageValue > 80) {ageValue=80;}
@@ -285,10 +280,10 @@ int main (int argc, char *argv[])
       int ageBlock = (int)face.width/4;
 
       cv::Rect ageBorder     = cv::Rect( face.x                   , face.y+face.height+agePos  , round(face.width/2) + round(face.width/2), 10 );
-      cv::Rect ageGroupA      = cv::Rect( face.x + 1               , face.y+face.height+agePos+1, ageBlock, 8 );
+      cv::Rect ageGroupA     = cv::Rect( face.x + 1               , face.y+face.height+agePos+1, ageBlock, 8 );
       cv::Rect ageGroupB     = cv::Rect( face.x + 1 +    ageBlock , face.y+face.height+agePos+1, ageBlock, 8 );
-      cv::Rect ageGroupC       = cv::Rect( face.x + 1 + (2*ageBlock), face.y+face.height+agePos+1, ageBlock, 8 );
-      cv::Rect ageGroupD       = cv::Rect( face.x + 1 + (3*ageBlock), face.y+face.height+agePos+1, ageBlock, 8 );
+      cv::Rect ageGroupC     = cv::Rect( face.x + 1 + (2*ageBlock), face.y+face.height+agePos+1, ageBlock, 8 );
+      cv::Rect ageGroupD     = cv::Rect( face.x + 1 + (3*ageBlock), face.y+face.height+agePos+1, ageBlock, 8 );
       cv::Rect ageIndicatorB = cv::Rect( face.x + 1 + ageLocInBar - 1, face.y+face.height+agePos+1, 4, 8 );
       cv::Rect ageIndicatorW = cv::Rect( face.x + 1 + ageLocInBar    , face.y+face.height+agePos+1, 2, 8 );
 
@@ -300,10 +295,7 @@ int main (int argc, char *argv[])
       cv::rectangle( frame, ageIndicatorW, cv::Scalar(255,255,255) , CV_FILLED );
       cv::rectangle( frame, ageBorder    , cv::Scalar(255,255,255) , 1 );
 
-
-      cv::putText(frame, "AGE", cv::Point(face.x+3, face.y+face.height+agePos+7 ),
-                  cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255));
-
+      cv::putText( frame, "AGE", cv::Point(face.x+3, face.y+face.height+agePos+7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
 
       // Draw a rectangle around person's face on the current frame
       cv::rectangle(frame, face, cv::Scalar(255,255,255), 1);
@@ -324,8 +316,7 @@ int main (int argc, char *argv[])
       // for this purpose, yaw and pitch are normalized in [-1...1] by HeadPose
       float yawValue = 1 - ((person.getHeadYaw()+1.)/2.);
       float pitchValue = (person.getHeadPitch()+1.)/2.;
-      cv::line(frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), cv::Scalar(255,255,255), 2);
-
+      cv::line( frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), cv::Scalar(255,255,255), 2 );
 
 #if RECORDING
       //store to csv...
@@ -399,11 +390,6 @@ int main (int argc, char *argv[])
                 << "0" << "," << "0" << "," << "0" << "," << "0" << "," << "0" << "\n";
     }
 #endif
-
-
-
-
-
 
     std::ostringstream peopleCounter_string;
     peopleCounter_string << "People counter: ";
