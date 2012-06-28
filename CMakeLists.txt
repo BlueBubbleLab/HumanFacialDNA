@@ -42,11 +42,16 @@ IF (MSVC)
     SET(COMPILER "vs2010")
 ENDIF ()
 
+
 #-------------------------------------------------------------------------------
 # Extract and set the version
 #-------------------------------------------------------------------------------
+SET(PRODUCT "inSightDemo")
+
+FIND_PACKAGE(Git REQUIRED)
+
 EXECUTE_PROCESS(
-    COMMAND git describe --tags
+    COMMAND ${GIT_EXECUTABLE} describe --tags --abbrev=0
     OUTPUT_VARIABLE GIT_VERSION
     ERROR_VARIABLE GIT_ERROR
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -55,8 +60,18 @@ EXECUTE_PROCESS(
 IF(GIT_VERSION)
     SET(VERSION ${GIT_VERSION})
 ELSE(NOT GIT_VERSION)
-    SET(VERSION "1.0")
+    SET(MAJOR_VERSION "10")
+    SET(MINOR_VERSION "00")
+    SET(VERSION "${MAJOR_VERSION}.${MINOR_VERSION}")
+    MESSAGE(STATUS " git tag not usable, using ${VERSION} as VERSION")
 ENDIF(GIT_VERSION)
+
+EXECUTE_PROCESS(
+    COMMAND ${GIT_EXECUTABLE} log --pretty=format:%h -n 1
+    OUTPUT_VARIABLE COMMIT
+    ERROR_VARIABLE GIT_ERROR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 CONFIGURE_FILE(
     "${INSIGHT_DEMO_SOURCE_DIR}/cmake/demo_version.h.in"
@@ -69,7 +84,7 @@ CONFIGURE_FILE(
 IF (WIN32)
     SET(WINBIN "${CMAKE_CURRENT_SOURCE_DIR}/../winbin" CACHE PATH
       "Location of the WINBIN git repository")
-    
+
     IF(NOT EXISTS ${WINBIN})
       MESSAGE(ERROR
         "${WINBIN} doesn't exists, please set WINBIN to ThirdSight WINBIN project")
@@ -77,17 +92,11 @@ IF (WIN32)
         SET(CMAKE_MODULE_PATH "${WINBIN}/cmake/")
         INCLUDE(winbin)
     ENDIF(NOT EXISTS ${WINBIN})
-    
+
     LINK_DIRECTORIES(
         ${OpenCV_LIB_DIR}
-		#Libs are necessary for msvc to link the dlls
-		${JPEG_LIB_DIR}
-		${GSL_LIB_DIR}
-		${GLEW_LIB_DIR}
-		${GLUT_LIB_DIR}
-		${BLAS_LIB_DIR}
-		${CURL_LIB_DIR}
-    )
+      ${CURL_LIB_DIR}
+  )
 ELSE (WIN32)
     FIND_PACKAGE(OpenCV REQUIRED)
 ENDIF (WIN32)
@@ -101,7 +110,7 @@ INCLUDE_DIRECTORIES(${INSIGHT_DEMO_BINARY_DIR})
 #-------------------------------------------------------------------------------
 # Add InSight subproject
 #-------------------------------------------------------------------------------
-SET(INSIGHT_STANDALONE FALSE)
+SET(INSIGHT_STANDALONE TRUE) #Don't pass product id to insight
 ADD_SUBDIRECTORY(${INSIGHT_DEMO_SOURCE_DIR}/inSight insight)
 INCLUDE_DIRECTORIES(${INSIGHT_SOURCE_DIR}/src)
 LINK_DIRECTORIES(${INSIGHT_BINARY_DIR})
@@ -122,11 +131,43 @@ IF(OSX)
 ELSE(OSX)
     ADD_EXECUTABLE(${TARGET_GAZE_DEMO} ${GAZE_DEMO_SOURCE})
 ENDIF(OSX)
-
 TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
     insight
     ${OpenCV_LIBS}
 )
+
+#-------------------------------------------------------------------------------
+# Windows post build
+#-------------------------------------------------------------------------------
+
+IF(WIN32)
+    ADD_CUSTOM_COMMAND(
+        TARGET ${TARGET_GAZE_DEMO}
+        POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${INSIGHT_DEMO_BINARY_DIR}/insight/libinsight.dll
+                ${INSIGHT_DEMO_BINARY_DIR}
+    )
+ENDIF()
+
+#-------------------------------------------------------------------------------
+# Windows packaging
+#-------------------------------------------------------------------------------
+
+IF(WIN32)
+    INSTALL(TARGETS ${TARGET_GAZE_DEMO} DESTINATION .)
+
+    INSTALL(FILES ${OpenCV_DLL_FILES} DESTINATION .)
+    INSTALL(FILES ${CURL_DLL_FILES} DESTINATION .)
+    INSTALL(DIRECTORY ${INSIGHT_DEMOS_SOURCE_DIR}resources DESTINATION .)
+    IF (MINGW)
+        INSTALL(FILES ${MINGW_DLL_FILES} DESTINATION .)
+    ENDIF (MINGW)
+
+    # hack to install libstdc++-6.dll
+    find_file(LIBSTDC libstdc++-6.dll)
+    INSTALL(FILES ${LIBSTDC} DESTINATION .)
+ENDIF()
 
 #-------------------------------------------------------------------------------
 # OSX devel example bundle
