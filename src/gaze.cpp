@@ -103,45 +103,12 @@ int main ( int argc, char *argv[] )
     {{255, 0,   255}}
   };
 
-#if RECORDING
-  std::ofstream storeFile;
-  std::ostringstream fileName;
-  fileName << "outputData_" << time( NULL ) << ".csv";
-  storeFile.open( fileName.str().c_str(), std::ios::out | std::ios::app );
-
-  std::ofstream storeFileBinned;
-  std::ostringstream fileNameBinned;
-  fileNameBinned << "outputData_" << time( NULL ) << "_binned.csv";
-  storeFileBinned.open( fileNameBinned.str().c_str(), std::ios::out | std::ios::app );
-
-  int outputBinSizeInMiliSec = 10000;
-  int endTimePreviousBin     = 0;
-  int binCounter             = 0;
-  int agesBinSize            = 20;
-  int lastBinsPeopleCounter  = 0;
-
-  std::vector<int> ages   ( 4, 0 );
-  std::vector<int> genders( 2, 0 );
-  std::vector<int> yaws   ( 3, 0 );
-  std::vector<int> pitches( 3, 0 );
-  std::vector<int> uniqueIDsInOutput;
-  std::vector<int> newIDsThisBin;
-#endif
-
-
   //If desirable skips of a video can be skipped.
   int processEveryNthFrame = 1;
   // keep track of how many frames are processed
   int frameCount = 0;
 
   cap >> frame;
-
-#if RECORDING
-  std::ostringstream videoName;
-  videoName << "outputVideo_" << time( NULL ) << ".avi"; //videoName.str().c_str()
-  cv::VideoWriter videoOutput( videoName.str().c_str(), CV_FOURCC('M','J','P','G'), 5, frame.size() );
-  bool firstFrameToBeWritten = true;
-#endif
 
   // Define the region of interest here
   int marginTop     = 0;
@@ -158,19 +125,11 @@ int main ( int argc, char *argv[] )
     //Grab a frame
     cap >> frame;
 
-    // below defines a subsequence that is nice for demonstration purposes
-
-    //        std::cout << frameCount << std::endl;
-    //        if(frameCount < 775)
-    //          continue;
-
-    //        if(frameCount == 920)
-    //          break;
-
     //If frame is empty break
     if ( frame.empty() )
     {
-      break;
+      cap.open(file_name);
+      cap >> frame;
     }
 
     //Flip frame if capturing from webcam
@@ -305,96 +264,13 @@ int main ( int argc, char *argv[] )
       // Draw a rectangle around person's face on the current frame
       cv::rectangle(frame, face, cv::Scalar(255,255,255), 1);
 
-      // Draw the continuous measure of mood
-      //            cv::Rect theMood           = cv::Rect( face.x+round(face.width*moodValue),   face.y+face.height+moodPos+1, 3, 10 );
-      //            cv::Rect theMoodInnerWhite = cv::Rect( face.x+round(face.width*moodValue)+1, face.y+face.height+moodPos+2, 1,  8 );
-      //            cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
-      //            cv::rectangle(frame,theMoodInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
-
-      // Draw the continuous measure of gender
-      //            cv::Rect theGender           = cv::Rect( face.x+round(face.width*(1.-genderValue))  , face.y+face.height+genderPos+1, 3, 10 );
-      //            cv::Rect theGenderInnerWhite = cv::Rect( face.x+round(face.width*(1.-genderValue))+1, face.y+face.height+genderPos+2, 1,  8 );
-      //            cv::rectangle(frame,theGender,cv::Scalar(0,0,0),CV_FILLED);
-      //            cv::rectangle(frame,theGenderInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
-
       // visualize head pose
       // for this purpose, yaw and pitch are normalized in [-1...1] by HeadPose
       float yawValue = 1 - ((person.getHeadYaw()+1.)/2.);
       float pitchValue = (person.getHeadPitch()+1.)/2.;
       cv::line( frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), cv::Scalar(255,255,255), 2 );
 
-#if RECORDING
-      //store to csv...
-      storeFile << frameCount << "," << person.getID() << "," << person.getTime() << "," << person.getAge() << "," << person.getGender() << ","
-                << person.getFaceRect().x << "," << person.getFaceRect().y << "," << person.getFaceRect().width << ","
-                << person.getHeadYaw() << "," << person.getHeadPitch() << "\n";
-
-
-      if (person.getTime()-endTimePreviousBin > outputBinSizeInMiliSec)
-      {
-        binCounter        += 1;
-        endTimePreviousBin = person.getTime();
-
-        //store to csv...
-        storeFileBinned << binCounter    << "," << uniqueIDsInOutput.size() << "," << newIDsThisBin.size() << "," << crowdsight.getPeopleCount() << "," << crowdsight.getPeopleCount()-lastBinsPeopleCounter << ","
-                        << ages.at(0)    << "," << ages.at(1)    << "," << ages.at(2)    << "," << ages.at(3) << ","
-                        << genders.at(0) << "," << genders.at(1) << ","
-                        << yaws.at(0)    << "," << yaws.at(1)    << "," << yaws.at(2)    << ","
-                        << pitches.at(0) << "," << pitches.at(1) << "," << pitches.at(2) << ","  << "\n";
-
-        ages.at(0)    = 0;
-        ages.at(1)    = 0;
-        ages.at(2)    = 0;
-        ages.at(3)    = 0;
-
-        genders.at(0) = 0;
-        genders.at(1) = 0;
-
-        yaws.at(0)    = 0;
-        yaws.at(1)    = 0;
-        yaws.at(2)    = 0;
-
-        pitches.at(0) = 0;
-        pitches.at(1) = 0;
-        pitches.at(2) = 0;
-
-        newIDsThisBin.clear();
-
-        lastBinsPeopleCounter = crowdsight.getPeopleCount();
-
-      }
-
-      int ageBin = cv::min(3,person.getAge()/agesBinSize);
-      ages.at(ageBin) += 1;
-
-      if      (person.getGender() <=0)   { genders.at(0) += 1; }
-      else                               { genders.at(1) += 1; }
-
-      if      (person.getYaw() <=0.38)   { yaws.at(0) += 1; }
-      else if (person.getYaw() <=0.54)   { yaws.at(1) += 1; }
-      else                               { yaws.at(2) += 1; }
-
-      if      (person.getPitch() <=0.38) { pitches.at(0) += 1; }
-      else if (person.getPitch() <=0.54) { pitches.at(1) += 1; }
-      else                               { pitches.at(2) += 1; }
-
-      std::vector<int>::iterator itor = std::find(uniqueIDsInOutput.begin(), uniqueIDsInOutput.end(), person.getID());
-      if (itor == uniqueIDsInOutput.end())
-      {
-        uniqueIDsInOutput.push_back(person.getID());
-        newIDsThisBin.push_back(person.getID());
-      }
-#endif
     }
-
-#if RECORDING
-    if (people.size()==0)
-    {
-      // when no people are recognized in a frame, store zeros so the csv file will be synchronous with the video
-      storeFile << frameCount << "," << "0" << "," << "0" << "," << "0" << "," << "0" << ","
-                << "0" << "," << "0" << "," << "0" << "," << "0" << "," << "0" << "\n";
-    }
-#endif
 
     std::ostringstream peopleCounter_string;
     std::ostringstream peopleCounterNR_string;
@@ -408,26 +284,10 @@ int main ( int argc, char *argv[] )
     cv::imshow( HUMAN_NAME, frame );
     //Show processed frame
 
-    //    cv::Mat bigframe;
-    //    cv::resize(frame,bigframe,cv::Size(1280,1024));
-    //    cv::imshow(HUMAN_NAME, bigframe);
-
-#if RECORDING
-    if(!firstFrameToBeWritten)
-      videoOutput << frame;
-    else
-      firstFrameToBeWritten = false;
-#endif
-
-    //    cv::waitKey();
-
     //Press 'q' to quit the program
     char key = cv::waitKey(1);
     if (key == 'q')
     {
-#if RECORDING
-      storeFile.close();
-#endif
       break;
     }
   }
