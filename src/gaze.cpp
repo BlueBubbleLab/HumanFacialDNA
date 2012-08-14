@@ -6,6 +6,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include "../CrowdSight/src/crowdsight.h"
+#include "../CrowdSight/src/util/util.h"
 #include "demo_version.h"
 
 #ifndef HUMAN_NAME
@@ -160,9 +161,8 @@ int main ( int argc, char *argv[] )
 
     // below defines a subsequence that is nice for demonstration purposes
 
-    //        std::cout << frameCount << std::endl;
-    //        if(frameCount < 775)
-    //          continue;
+            if(frameCount < 100)
+              continue;
 
     //        if(frameCount == 920)
     //          break;
@@ -243,7 +243,7 @@ int main ( int argc, char *argv[] )
       //Get person's attention span. This value is returned in milliseconds
       int64_t attentionSpan = person.getAttentionSpan();
 
-      id_string        << "ID #"        << id << "/" << person.getPredatorID();
+      id_string        << "ID #"        << id;// << "/" << person.getPredatorID();
       // Display attention span in minutes:seconds
       int minutes = (attentionSpan / 60000 );
       int seconds = ( attentionSpan / 1000 ) % 60;
