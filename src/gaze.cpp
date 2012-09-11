@@ -211,10 +211,20 @@ int main ( int argc, char *argv[] )
     int marginRight   = 0;
     cv::Rect roi;
 
+//    crowdsight.setMatchingLevel( 0.15 );
+//    crowdsight.setFaceConfidence( 0.1 );
+
+    crowdsight.setMinFaceSize( 100 );
+    crowdsight.setMaxFaceSize( 120 );
+
+
+    bool useClassifiers[] = { true, true, true, true };
+    bool useScaleFactor   = false;
+
+
     //Start main processing loop
     while( true )
     {
-
       frameCount++;
 
       //Grab a frame
@@ -298,6 +308,9 @@ int main ( int argc, char *argv[] )
         //Get person's attention span. This value is returned in milliseconds
         int64_t attentionSpan = person.getAttentionSpan();
 
+        std::vector< std::vector<int> > clothingColors = person.getClothingColors( 3 );
+
+
         id_string        << "ID #"        << id ; //<< "/" << person.getPredatorID();
         // Display attention span in minutes:seconds
         int minutes = (attentionSpan / 60000 );
@@ -307,7 +320,6 @@ int main ( int argc, char *argv[] )
         else              { attention_string << ":"  << seconds; }
 
         cv::putText( frame, id_string.str(),        cv::Point( face.x+3, idPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, colors[1] );
-  //      cv::putText( frame, id_string.str(),        cv::Point( face.x+3, idPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, colors[abs(id) % 8] );
         cv::putText( frame, attention_string.str(), cv::Point( face.x+3, attentionPos), cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
 
         // SHOW MOOD BAR
@@ -356,27 +368,23 @@ int main ( int argc, char *argv[] )
         cv::rectangle( frame, ageIndicatorW, cv::Scalar(255,255,255) , CV_FILLED );
         cv::rectangle( frame, ageBorder    , cv::Scalar(255,255,255) , 1 );
 
+        for ( unsigned int cl = 0; cl < clothingColors.size(); ++cl )
+        {
+          cv::Rect clothColorRect = cv::Rect( face.x + face.width, face.y + ( 30 * cl ), 10, 30 );
+          std::vector<int> clColor = clothingColors.at( cl );
+          cv::rectangle( frame, clothColorRect,
+                        cv::Scalar( clColor.at(2), clColor.at(1), clColor.at(0) ),
+                        CV_FILLED );
+        }
+
         cv::putText( frame, "AGE", cv::Point(face.x+3, face.y+face.height+agePos+7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
 
         // Draw a rectangle around person's face on the current frame
         cv::rectangle(frame, face, cv::Scalar(255,255,255), 1);
 
-        // Draw the continuous measure of mood
-        //            cv::Rect theMood           = cv::Rect( face.x+round(face.width*moodValue),   face.y+face.height+moodPos+1, 3, 10 );
-        //            cv::Rect theMoodInnerWhite = cv::Rect( face.x+round(face.width*moodValue)+1, face.y+face.height+moodPos+2, 1,  8 );
-        //            cv::rectangle(frame,theMood,cv::Scalar(0,0,0),CV_FILLED);
-        //            cv::rectangle(frame,theMoodInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
-
-        // Draw the continuous measure of gender
-        //            cv::Rect theGender           = cv::Rect( face.x+round(face.width*(1.-genderValue))  , face.y+face.height+genderPos+1, 3, 10 );
-        //            cv::Rect theGenderInnerWhite = cv::Rect( face.x+round(face.width*(1.-genderValue))+1, face.y+face.height+genderPos+2, 1,  8 );
-        //            cv::rectangle(frame,theGender,cv::Scalar(0,0,0),CV_FILLED);
-        //            cv::rectangle(frame,theGenderInnerWhite,cv::Scalar(255,255,255),CV_FILLED);
-
-        // visualize head pose
-        // for this purpose, yaw and pitch are normalized in [-1...1] by HeadPose
-        float yawValue = 1 - ((person.getHeadYaw()+1.)/2.);
-        float pitchValue = (person.getHeadPitch()+1.)/2.;
+        // visualize head pose; for this purpose, yaw and pitch are normalized in [-1...1] by HeadPose
+        float yawValue   = 1 - ( ( person.getHeadYaw() + 1. ) / 2. );
+        float pitchValue = ( person.getHeadPitch() + 1. ) / 2.;
         cv::line( frame, cv::Point(face.x+face.width/2,face.y+face.height/2), cv::Point(face.x+yawValue*face.width,face.y+pitchValue*face.height), cv::Scalar(255,255,255), 2 );
 
   #if RECORDING
@@ -457,8 +465,24 @@ int main ( int argc, char *argv[] )
       peopleCounter_string   << "People counter: ";
       peopleCounterNR_string << crowdsight.getPeopleCount();
 
-      cv::putText( frame, peopleCounter_string.str(),   cv::Point(3, 13),  cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0), 2 );
-      cv::putText( frame, peopleCounterNR_string.str(), cv::Point(50, 40), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0), 2 );
+      std::ostringstream age_string, gender_string, mood_string, headPose_string, scaleFactor_string;
+
+      age_string         << "Age "         << useClassifiers[0];
+      gender_string      << "Gender "      << useClassifiers[1];
+      mood_string        << "Mood "        << useClassifiers[2];
+      headPose_string    << "HeadPose "    << useClassifiers[3];
+      scaleFactor_string << "ScaleFactor " << useScaleFactor;
+
+      cv::putText( frame, age_string.str(),         cv::Point(3, 10), cv::FONT_HERSHEY_PLAIN, 0.8, cv::Scalar(0,0,0) );
+      cv::putText( frame, gender_string.str(),      cv::Point(3, 25), cv::FONT_HERSHEY_PLAIN, 0.8, cv::Scalar(0,0,0) );
+      cv::putText( frame, mood_string.str(),        cv::Point(3, 40), cv::FONT_HERSHEY_PLAIN, 0.8, cv::Scalar(0,0,0) );
+      cv::putText( frame, headPose_string.str(),    cv::Point(3, 55), cv::FONT_HERSHEY_PLAIN, 0.8, cv::Scalar(0,0,0) );
+      cv::putText( frame, scaleFactor_string.str(), cv::Point(3, 70), cv::FONT_HERSHEY_PLAIN, 0.8, cv::Scalar(0,0,0) );
+
+//      cv::putText( frame, peopleCounter_string.str(),   cv::Point(3, 13),  cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0), 2 );
+//      cv::putText( frame, peopleCounterNR_string.str(), cv::Point(50, 40), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0), 2 );
+
+
 
       cv::rectangle( frame, roi, cv::Scalar(255,255,255), 1 );
       cv::imshow( HUMAN_NAME, frame );
@@ -484,7 +508,38 @@ int main ( int argc, char *argv[] )
   #if RECORDING
         storeFile.close();
   #endif
+//        crowdsight.saveSettings();
         break;
+      }
+
+      if (key == '1')
+      {
+        if ( useClassifiers[0] ) { crowdsight.useAge( false ); useClassifiers[0] = false; }
+        else                     { crowdsight.useAge( true );  useClassifiers[0] = true; }
+      }
+
+      if (key == '2')
+      {
+        if ( useClassifiers[1] ) { crowdsight.useGender( false ); useClassifiers[1] = false; }
+        else                     { crowdsight.useGender( true );  useClassifiers[1] = true; }
+      }
+
+      if (key == '3')
+      {
+        if ( useClassifiers[2] ) { crowdsight.useMood( false ); useClassifiers[2] = false; }
+        else                     { crowdsight.useMood( true );  useClassifiers[2] = true; }
+      }
+
+      if (key == '4')
+      {
+        if ( useClassifiers[3] ) { crowdsight.useHeadPose( false ); useClassifiers[3] = false; }
+        else                     { crowdsight.useHeadPose( true );  useClassifiers[3] = true; }
+      }
+
+      if (key == 's')
+      {
+        if ( useScaleFactor ) { crowdsight.useScaleFactor( false ); useScaleFactor = false; }
+        else                  { crowdsight.useScaleFactor( true );  useScaleFactor = true; }
       }
     }
 
