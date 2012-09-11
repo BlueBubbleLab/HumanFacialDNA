@@ -273,6 +273,7 @@ int main ( int argc, char *argv[] )
       {
         std::ostringstream id_string;
         std::ostringstream attention_string;
+        std::ostringstream rc_string;
 
         //Get person at current index
         Person person = people.at(i);
@@ -295,6 +296,7 @@ int main ( int argc, char *argv[] )
         int genderPos     = 1;
         int agePos        = 12;
         int idPos         = face.y + 10;
+        int rcPos         = idPos + 12;
         int attentionPos  = face.y + face.height-3;
 
         //Draw circles in the center of left and right eyes
@@ -309,17 +311,20 @@ int main ( int argc, char *argv[] )
         int64_t attentionSpan = person.getAttentionSpan();
 
         std::vector< std::vector<int> > clothingColors = person.getClothingColors( 3 );
+        bool returningCustomer = person.isReturningCustomer();
 
 
-        id_string        << "ID #"        << id ; //<< "/" << person.getPredatorID();
+        id_string << "ID #" << id; //<< "/" << person.getPredatorID();
+        rc_string << "RC " << returningCustomer;
         // Display attention span in minutes:seconds
-        int minutes = (attentionSpan / 60000 );
+        int minutes = ( attentionSpan / 60000 );
         int seconds = ( attentionSpan / 1000 ) % 60;
         attention_string << minutes;
         if (seconds < 10) { attention_string << ":0" << seconds; }
         else              { attention_string << ":"  << seconds; }
 
         cv::putText( frame, id_string.str(),        cv::Point( face.x+3, idPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, colors[1] );
+        cv::putText( frame, rc_string.str(),        cv::Point( face.x+3, rcPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
         cv::putText( frame, attention_string.str(), cv::Point( face.x+3, attentionPos), cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
 
         // SHOW MOOD BAR
