@@ -124,14 +124,14 @@ int main ( int argc, char *argv[] )
 
   if (runCrowdSightServer)
   {
-    CrowdSightServer crowdsightserver( data_dir );
-    crowdsightserver.runCrowdSightServer();
+//    CrowdSightServer crowdsightserver( data_dir );
+//    crowdsightserver.runCrowdSightServer();
   }
   // *******************************************
   else
   {
     //Create crowdsight instance
-    CrowdSight crowdsight( data_dir, instanceName );
+    CrowdSight crowdsight( data_dir );
 
 
 
