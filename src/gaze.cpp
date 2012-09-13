@@ -274,18 +274,27 @@ int main ( int argc, char *argv[] )
         std::ostringstream id_string;
         std::ostringstream attention_string;
         std::ostringstream rc_string;
+        std::vector< std::vector<int> > clothingColors;
 
         //Get person at current index
         Person person = people.at(i);
 
-        //Retrieve the person's face
-        cv::Rect face = person.getFaceRect();
+        /*********************************** RETRIEVE PERSON INFO ***********************************/
 
-        //Retrieve left and right eye locations of the person. Eye location is relative to the face rectangle.
-        cv::Point right_eye = person.getRightEye();
-        cv::Point left_eye  = person.getLeftEye();
+        cv::Rect    face              = person.getFaceRect();      // Retrieve the person's face
+        cv::Point   right_eye         = person.getRightEye();      // Retrieve left and right eye locations of the person. Eye location is relative to the face rectangle.
+        cv::Point   left_eye          = person.getLeftEye();
+        std::string id                = person.getID();
+        float       ageValue          = person.getAge();
+        float       genderValue       = ( person.getGender() + 1. ) / 2.;
+        float       moodValue         = ( person.getMood() + 1. ) / 2.;
+        int64_t     attentionSpan     = person.getAttentionSpan(); // Get person's attention span. This value is returned in milliseconds
+        bool        hasClothingColors = person.getClothingColors( 3, clothingColors );
+        bool        returningCustomer = person.isReturningCustomer();
 
-        //Offset eye position with face position, to get frame coordinates.
+        /************************************* DRAW PERSON INFO *************************************/
+
+        // Offset eye position with face position, to get frame coordinates.
         right_eye.x += face.x;
         right_eye.y += face.y;
         left_eye.x  += face.x;
@@ -303,19 +312,9 @@ int main ( int argc, char *argv[] )
         cv::circle(frame, right_eye, 3, cv::Scalar(0,255,0));
         cv::circle(frame, left_eye,  3, cv::Scalar(0,255,0));
 
-        //Get the features of a person
-        std::string   id       = person.getID();
-        float ageValue = person.getAge();
-        float moodValue = (person.getMood()+1.)/2.;
-        //Get person's attention span. This value is returned in milliseconds
-        int64_t attentionSpan = person.getAttentionSpan();
-
-        std::vector< std::vector<int> > clothingColors = person.getClothingColors( 3 );
-        bool returningCustomer = person.isReturningCustomer();
-
-
         id_string << "ID #" << id; //<< "/" << person.getPredatorID();
         rc_string << "RC " << returningCustomer;
+
         // Display attention span in minutes:seconds
         int minutes = ( attentionSpan / 60000 );
         int seconds = ( attentionSpan / 1000 ) % 60;
@@ -339,9 +338,7 @@ int main ( int argc, char *argv[] )
         cv::putText( frame, "MOOD", cv::Point( face.x+3, face.y + moodPos + 7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
 
         // SHOW GENDER BAR
-        float genderValue = ( person.getGender() + 1 ) / 2.;
-
-        cv::Rect genderBorder = cv::Rect( face.x, face.y + face.height + genderPos, face.width, 10 );
+         cv::Rect genderBorder = cv::Rect( face.x, face.y + face.height + genderPos, face.width, 10 );
         cv::Rect genderPink   = cv::Rect( face.x + floor((1-genderValue)*face.width) + 1, face.y + face.height + genderPos + 1, floor(genderValue*face.width) - 1, 8 );
         cv::Rect genderBlue   = cv::Rect( face.x + 1, face.y + face.height + genderPos + 1, (1-genderValue) * face.width -1, 8 );
 
@@ -353,9 +350,10 @@ int main ( int argc, char *argv[] )
 
         // SHOW AGE BAR
         if (ageValue > 80) {ageValue=80;}
-        double agePerc = ((double)ageValue/80.0);
-        int ageLocInBar = (int)(face.width*agePerc);
-        int ageBlock = (int)face.width/4;
+
+        double agePerc     = static_cast<double>( ageValue / 80.0 );
+        int    ageLocInBar = static_cast<int>( face.width * agePerc );
+        int    ageBlock    = static_cast<int>( face.width / 4 );
 
         cv::Rect ageBorder     = cv::Rect( face.x                   , face.y+face.height+agePos  , round(face.width/2) + round(face.width/2), 10 );
         cv::Rect ageGroupA     = cv::Rect( face.x + 1               , face.y+face.height+agePos+1, ageBlock, 8 );
@@ -373,16 +371,21 @@ int main ( int argc, char *argv[] )
         cv::rectangle( frame, ageIndicatorW, cv::Scalar(255,255,255) , CV_FILLED );
         cv::rectangle( frame, ageBorder    , cv::Scalar(255,255,255) , 1 );
 
-        for ( unsigned int cl = 0; cl < clothingColors.size(); ++cl )
+        cv::putText( frame, "AGE", cv::Point(face.x+3, face.y+face.height+agePos+7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
+
+        // Draw the top dominant clothing colors
+        if ( hasClothingColors )
         {
-          cv::Rect clothColorRect = cv::Rect( face.x + face.width, face.y + ( 30 * cl ), 10, 30 );
-          std::vector<int> clColor = clothingColors.at( cl );
-          cv::rectangle( frame, clothColorRect,
-                        cv::Scalar( clColor.at(2), clColor.at(1), clColor.at(0) ),
-                        CV_FILLED );
+          for ( unsigned int cl = 0; cl < clothingColors.size(); ++cl )
+          {
+            cv::Rect clothColorRect = cv::Rect( face.x + face.width, face.y + ( 30 * cl ), 10, 30 );
+            std::vector<int> clColor = clothingColors.at( cl );
+            cv::rectangle( frame, clothColorRect,
+                          cv::Scalar( clColor.at(2), clColor.at(1), clColor.at(0) ),
+                          CV_FILLED );
+          }
         }
 
-        cv::putText( frame, "AGE", cv::Point(face.x+3, face.y+face.height+agePos+7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
 
         // Draw a rectangle around person's face on the current frame
         cv::rectangle(frame, face, cv::Scalar(255,255,255), 1);
@@ -484,10 +487,8 @@ int main ( int argc, char *argv[] )
       cv::putText( frame, headPose_string.str(),    cv::Point(3, 55), cv::FONT_HERSHEY_PLAIN, 0.8, cv::Scalar(0,0,0) );
       cv::putText( frame, scaleFactor_string.str(), cv::Point(3, 70), cv::FONT_HERSHEY_PLAIN, 0.8, cv::Scalar(0,0,0) );
 
-//      cv::putText( frame, peopleCounter_string.str(),   cv::Point(3, 13),  cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0), 2 );
-//      cv::putText( frame, peopleCounterNR_string.str(), cv::Point(50, 40), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0), 2 );
-
-
+      cv::putText( frame, peopleCounter_string.str(),   cv::Point(500, 13),  cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0,0,0), 2 );
+      cv::putText( frame, peopleCounterNR_string.str(), cv::Point(550, 40), cv::FONT_HERSHEY_SIMPLEX, 0.8, cv::Scalar(0,0,0), 2 );
 
       cv::rectangle( frame, roi, cv::Scalar(255,255,255), 1 );
       cv::imshow( HUMAN_NAME, frame );
@@ -503,9 +504,6 @@ int main ( int argc, char *argv[] )
       else
         firstFrameToBeWritten = false;
   #endif
-
-      //    cv::waitKey();
-
       //Press 'q' to quit the program
       char key = cv::waitKey(1);
       if (key == 'q')
@@ -513,6 +511,7 @@ int main ( int argc, char *argv[] )
   #if RECORDING
         storeFile.close();
   #endif
+        // uncomment line below if you want to store changes made run-time in the settings.ini file
 //        crowdsight.saveSettings();
         break;
       }
