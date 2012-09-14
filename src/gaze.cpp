@@ -221,7 +221,6 @@ int main ( int argc, char *argv[] )
     bool useClassifiers[] = { true, true, true, true };
     bool useScaleFactor   = false;
 
-
     //Start main processing loop
     while( true )
     {
@@ -271,9 +270,11 @@ int main ( int argc, char *argv[] )
       //For each person in the frame, do:
       for (unsigned int i=0; i<people.size();i++)
       {
+
         std::ostringstream id_string;
         std::ostringstream attention_string;
         std::ostringstream rc_string;
+        std::ostringstream db_string;
         std::vector< std::vector<int> > clothingColors;
 
         //Get person at current index
@@ -291,6 +292,7 @@ int main ( int argc, char *argv[] )
         int64_t     attentionSpan     = person.getAttentionSpan(); // Get person's attention span. This value is returned in milliseconds
         bool        hasClothingColors = person.getClothingColors( 3, clothingColors );
         bool        returningCustomer = person.isReturningCustomer();
+        bool        isFromDatabase    = person.isFromDatabase();
 
         /************************************* DRAW PERSON INFO *************************************/
 
@@ -306,6 +308,7 @@ int main ( int argc, char *argv[] )
         int agePos        = 12;
         int idPos         = face.y + 10;
         int rcPos         = idPos + 12;
+        int dbPos         = rcPos + 12;
         int attentionPos  = face.y + face.height-3;
 
         //Draw circles in the center of left and right eyes
@@ -314,6 +317,7 @@ int main ( int argc, char *argv[] )
 
         id_string << "ID #" << id; //<< "/" << person.getPredatorID();
         rc_string << "RC " << returningCustomer;
+        db_string << "DB " << isFromDatabase;
 
         // Display attention span in minutes:seconds
         int minutes = ( attentionSpan / 60000 );
@@ -324,6 +328,7 @@ int main ( int argc, char *argv[] )
 
         cv::putText( frame, id_string.str(),        cv::Point( face.x+3, idPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, colors[1] );
         cv::putText( frame, rc_string.str(),        cv::Point( face.x+3, rcPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
+        cv::putText( frame, db_string.str(),        cv::Point( face.x+3, dbPos),        cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
         cv::putText( frame, attention_string.str(), cv::Point( face.x+3, attentionPos), cv::FONT_HERSHEY_SIMPLEX, 0.35, cv::Scalar(255, 255, 255) );
 
         // SHOW MOOD BAR
@@ -338,7 +343,7 @@ int main ( int argc, char *argv[] )
         cv::putText( frame, "MOOD", cv::Point( face.x+3, face.y + moodPos + 7 ), cv::FONT_HERSHEY_PLAIN, 0.5, cv::Scalar(255, 255, 255) );
 
         // SHOW GENDER BAR
-         cv::Rect genderBorder = cv::Rect( face.x, face.y + face.height + genderPos, face.width, 10 );
+        cv::Rect genderBorder = cv::Rect( face.x, face.y + face.height + genderPos, face.width, 10 );
         cv::Rect genderPink   = cv::Rect( face.x + floor((1-genderValue)*face.width) + 1, face.y + face.height + genderPos + 1, floor(genderValue*face.width) - 1, 8 );
         cv::Rect genderBlue   = cv::Rect( face.x + 1, face.y + face.height + genderPos + 1, (1-genderValue) * face.width -1, 8 );
 
@@ -385,7 +390,6 @@ int main ( int argc, char *argv[] )
                           CV_FILLED );
           }
         }
-
 
         // Draw a rectangle around person's face on the current frame
         cv::rectangle(frame, face, cv::Scalar(255,255,255), 1);
