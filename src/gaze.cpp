@@ -221,6 +221,12 @@ int main ( int argc, char *argv[] )
     bool useClassifiers[] = { true, true, true, true };
     bool useScaleFactor   = false;
 
+    crowdsight.useAge( useClassifiers[0] );
+    crowdsight.useGender( useClassifiers[1] );
+    crowdsight.useMood( useClassifiers[2] );
+    crowdsight.useHeadPose( useClassifiers[3] );
+    crowdsight.useScaleFactor( useScaleFactor );
+
     //Start main processing loop
     while( true )
     {
