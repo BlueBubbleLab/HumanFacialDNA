@@ -95,7 +95,10 @@ IF (WIN32)
 
     LINK_DIRECTORIES(
         ${OpenCV_LIB_DIR}
-      ${CURL_LIB_DIR}
+        ${CURL_LIB_DIR}
+        ${JPEG_LIB_DIR}
+        ${GSL_LIB_DIR}
+        ${BLAS_LIB_DIR}
   )
 ELSE (WIN32)
     FIND_PACKAGE(OpenCV REQUIRED)
@@ -141,11 +144,16 @@ TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
 #-------------------------------------------------------------------------------
 
 IF(WIN32)
+    IF(MSVC)
+        SET(INSIGHT_DLL insight.dll)
+    ELSEIF (MINGW)
+        SET(INSIGHT_DLL libinsight.dll)
+    ENDIF()
     ADD_CUSTOM_COMMAND(
         TARGET ${TARGET_GAZE_DEMO}
         POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
-                ${INSIGHT_DEMO_BINARY_DIR}/insight/libinsight.dll
+                ${INSIGHT_DEMO_BINARY_DIR}/insight/${INSIGHT_DLL}
                 ${INSIGHT_DEMO_BINARY_DIR}
     )
 ENDIF()
