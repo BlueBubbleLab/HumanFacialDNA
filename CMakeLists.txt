@@ -8,7 +8,7 @@ SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_MODULE_PATH "${INSIGHT_DEMO_SOURCE_DIR}/cmake/modules")
 
 IF(CMAKE_COMPILER_IS_GNUCXX)
-    SET(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror")
+    SET(CMAKE_CXX_FLAGS "-Wall -Wextra")
     SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -DDEBUG")
     SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DDEBUG")
@@ -130,11 +130,11 @@ INCLUDE_DIRECTORIES(
 # Add executables and link libraries
 #-------------------------------------------------------------------------------
 IF(OSX)
-    ADD_EXECUTABLE(${TARGET_GAZE_DEMO} MACOSX_BUNDLE ${GAZE_DEMO_SOURCE})
+    ADD_EXECUTABLE(${TARGET_FACE_DEMO} MACOSX_BUNDLE ${FACE_DEMO_SOURCE})
 ELSE(OSX)
-    ADD_EXECUTABLE(${TARGET_GAZE_DEMO} ${GAZE_DEMO_SOURCE})
+    ADD_EXECUTABLE(${TARGET_FACE_DEMO} ${FACE_DEMO_SOURCE})
 ENDIF(OSX)
-TARGET_LINK_LIBRARIES(${TARGET_GAZE_DEMO}
+TARGET_LINK_LIBRARIES(${TARGET_FACE_DEMO}
     insight
     ${OpenCV_LIBS}
 )
@@ -150,7 +150,7 @@ IF(WIN32)
         SET(INSIGHT_DLL libinsight.dll)
     ENDIF()
     ADD_CUSTOM_COMMAND(
-        TARGET ${TARGET_GAZE_DEMO}
+        TARGET ${TARGET_FACE_DEMO}
         POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 ${INSIGHT_DEMO_BINARY_DIR}/insight/${INSIGHT_DLL}
@@ -163,7 +163,7 @@ ENDIF()
 #-------------------------------------------------------------------------------
 
 IF(WIN32)
-    INSTALL(TARGETS ${TARGET_GAZE_DEMO} DESTINATION .)
+    INSTALL(TARGETS ${TARGET_FACE_DEMO} DESTINATION .)
 
     INSTALL(FILES ${OpenCV_DLL_FILES} DESTINATION .)
     INSTALL(FILES ${CURL_DLL_FILES} DESTINATION .)
@@ -181,14 +181,14 @@ ENDIF()
 # OSX devel example bundle
 #-------------------------------------------------------------------------------
 IF (OSX)
-    INSTALL(TARGETS ${TARGET_GAZE_DEMO} BUNDLE DESTINATION . COMPONENT Runtime)
+    INSTALL(TARGETS ${TARGET_FACE_DEMO} BUNDLE DESTINATION . COMPONENT Runtime)
 
     # Install resources and set icon
-    INSTALL(FILES "${INSIGHT_DEMO_SOURCE_DIR}/resources/icons/thirdsight.icns" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
-    INSTALL(DIRECTORY "${INSIGHT_SOURCE_DIR}/data" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+    INSTALL(FILES "${INSIGHT_DEMO_SOURCE_DIR}/resources/icons/thirdsight.icns" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_FACE_DEMO}.app/Contents/Resources COMPONENT Runtime)
+    INSTALL(DIRECTORY "${INSIGHT_SOURCE_DIR}/data" DESTINATION ${CMAKE_INSTALL_PREFIX}/${TARGET_FACE_DEMO}.app/Contents/Resources COMPONENT Runtime)
 
     # Set aliases for plugin and resource dir
-    SET(plugin_dest_dir ${TARGET_GAZE_DEMO}.app/Contents/MacOS)
+    SET(plugin_dest_dir ${TARGET_FACE_DEMO}.app/Contents/MacOS)
 
     # Set insight dependency directory
     SET(DIRS ${CMAKE_CURRENT_BINARY_DIR}/insight/)
@@ -199,13 +199,13 @@ file(GLOB_RECURSE QTPLUGINS
 \"\${CMAKE_INSTALL_PREFIX}/${plugin_dest_dir}/plugins/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
             include(BundleUtilities)
             SET(BU_CHMOD_BUNDLE_ITEMS ON)
-            fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${TARGET_GAZE_DEMO}.app\" \"\${QTPLUGINS}\" \"${DIRS}\")
+            fixup_bundle(\"\${CMAKE_INSTALL_PREFIX}/${TARGET_FACE_DEMO}.app\" \"\${QTPLUGINS}\" \"${DIRS}\")
             " COMPONENT Runtime)
 
 SET(MACOSX_BUNDLE_ICON_FILE thirdsight.icns)
-SET(MACOSX_BUNDLE_BUNDLE_NAME "${TARGET_GAZE_DEMO}")
-SET(MACOSX_BUNDLE_INFO_STRING "${TARGET_GAZE_DEMO} "${VERSION})
-SET(MACOSX_BUNDLE_GUI_IDENTIFIER "com.ThirdSight.${TARGET_GAZE_DEMO}" )
+SET(MACOSX_BUNDLE_BUNDLE_NAME "${TARGET_FACE_DEMO}")
+SET(MACOSX_BUNDLE_INFO_STRING "${TARGET_FACE_DEMO} "${VERSION})
+SET(MACOSX_BUNDLE_GUI_IDENTIFIER "com.ThirdSight.${TARGET_FACE_DEMO}" )
 SET(MACOSX_BUNDLE_BUNDLE_VERSION ${VERSION})
 SET(MACOSX_BUNDLE_LONG_VERSION_STRING ${VERSION})
 SET(MACOSX_BUNDLE_COPYRIGHT "Copyright 2011 ThirdSight B.V. All Rights Reserved")
