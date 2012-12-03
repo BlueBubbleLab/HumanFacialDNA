@@ -21,7 +21,7 @@ SET(GAZE_DEMO_SOURCE
 #-------------------------------------------------------------------------------
 # Face executable related resources
 #-------------------------------------------------------------------------------
-SET(TARGET_FACE_DEMO "face-demo")
+SET(TARGET_FACE_DEMO "example")
 
 # Add gui forms here
 #QT4_WRAP_UI(FACE_DEMO_QT_UI
@@ -35,5 +35,5 @@ SET(TARGET_FACE_DEMO "face-demo")
 SET(FACE_DEMO_SOURCE
     ${FACE_DEMO_QT_UI}
     ${FACE_DEMO_QT_CPP}
-    src/face-demo.cpp
+    src/example.cpp
 )

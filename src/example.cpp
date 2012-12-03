@@ -11,13 +11,6 @@
     #define HUMAN_NAME "inSight Demo"
 #endif
 
-
-// This is needed to generate a symbol that is missing while linking insight
-// Should come from an old libjpeg library.
-struct jpeg_decompress_struct{};
-void jinit_write_bmp1(jpeg_decompress_struct*, int){}
-
-
 int main(int argc, char *argv[])
 {
   cv::VideoCapture cap;
@@ -184,10 +177,14 @@ int main(int argc, char *argv[])
 
     cv::rectangle( background, headGazeBkgr, bkgrColor, CV_FILLED );
 
+    char key = cv::waitKey( 1 );
+    if( key == 27 || key == 'q' || !cvGetWindowHandle( HUMAN_NAME ) )
+    {
+      break;
+    }
     // Init or process
     if (!insight.isInit())
     {
-      char key = cv::waitKey( 1 );
       if( key == ' ' )
       {
         if( !insight.init( frame ) )
@@ -274,14 +271,6 @@ int main(int argc, char *argv[])
     cv::resize(frame,smallframe,cv::Size(640, 480));
     smallframe.copyTo(camera_roi);
     cv::imshow( HUMAN_NAME, background );
-
-
-    //Press 'q' to quit the program
-    char key = cv::waitKey(1);
-    if (key == 'q')
-    {
-      break;
-    }
   }
   return 0;
 }
