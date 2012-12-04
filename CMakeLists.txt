@@ -143,20 +143,20 @@ TARGET_LINK_LIBRARIES(${TARGET_FACE_DEMO}
 # Windows post build
 #-------------------------------------------------------------------------------
 
-IF(WIN32)
-    IF(MSVC)
-        SET(INSIGHT_DLL insight.dll)
-    ELSEIF (MINGW)
-        SET(INSIGHT_DLL libinsight.dll)
-    ENDIF()
-    ADD_CUSTOM_COMMAND(
-        TARGET ${TARGET_FACE_DEMO}
-        POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                ${INSIGHT_DEMO_BINARY_DIR}/insight/${INSIGHT_DLL}
-                ${INSIGHT_DEMO_BINARY_DIR}
-    )
-ENDIF()
+#IF(WIN32)
+#    IF(MSVC)
+#        SET(INSIGHT_DLL insight.dll)
+#    ELSEIF (MINGW)
+#        SET(INSIGHT_DLL libinsight.dll)
+#    ENDIF()
+#    ADD_CUSTOM_COMMAND(
+#        TARGET ${TARGET_FACE_DEMO}
+#        POST_BUILD
+#                COMMAND ${CMAKE_COMMAND} -E copy
+#                ${INSIGHT_DEMO_BINARY_DIR}/insight/${INSIGHT_DLL}
+#                ${INSIGHT_DEMO_BINARY_DIR}
+#    )
+#ENDIF()
 
 #-------------------------------------------------------------------------------
 # Windows packaging
