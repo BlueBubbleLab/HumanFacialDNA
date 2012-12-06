@@ -171,9 +171,9 @@ int main(int argc, char *argv[])
     cv::rectangle( background, rotationXBkgr, bkgrColor, CV_FILLED );
     cv::rectangle( background, rotationYBkgr, bkgrColor, CV_FILLED );
     cv::rectangle( background, rotationZBkgr, bkgrColor, CV_FILLED );
-    cv::circle( background, rotationCenterX, 20, rotationBkgrColor, 1, CV_AA );
-    cv::circle( background, rotationCenterY, 20, rotationBkgrColor, 1, CV_AA );
-    cv::circle( background, rotationCenterZ, 20, rotationBkgrColor, 1, CV_AA );
+    cv::circle( background, rotationCenterX, 20, rotationBkgrColor, 2, CV_AA );
+    cv::circle( background, rotationCenterY, 20, rotationBkgrColor, 2, CV_AA );
+    cv::circle( background, rotationCenterZ, 20, rotationBkgrColor, 2, CV_AA );
 
     cv::rectangle( background, headGazeBkgr, bkgrColor, CV_FILLED );
 
@@ -196,8 +196,8 @@ int main(int argc, char *argv[])
       {
         cv::rectangle( frame, cv::Rect( 145, 10, 350, 70 ), bkgrColor, CV_FILLED );
         cv::putText( frame, "Place your face inside the red circle,", cv::Point( 155, 30 ), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar( 255, 255, 255 ), 1,  CV_AA );
-        cv::putText( frame, "look toward the camera and press the",  cv::Point( 155, 50 ), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar( 255, 255, 255 ), 1,  CV_AA );
-        cv::putText( frame, "spacebar to initialize",                cv::Point( 155, 70 ), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar( 255, 255, 255 ), 1,  CV_AA );
+        cv::putText( frame, "look toward the camera and press the",   cv::Point( 155, 50 ), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar( 255, 255, 255 ), 1,  CV_AA );
+        cv::putText( frame, "spacebar to initialize",                 cv::Point( 155, 70 ), cv::FONT_HERSHEY_DUPLEX, 0.5, cv::Scalar( 255, 255, 255 ), 1,  CV_AA );
         cv::ellipse( frame, cv::Point( 320, 240 ), cv::Size( 100, 75 ), -90.0, 00.0, 360.0, cv::Scalar( 0, 0, 255 ), 1, CV_AA );
       }
     }
@@ -240,9 +240,9 @@ int main(int argc, char *argv[])
         // Draw head pose
         if( insight.getHeadPose( outHeadpose ) )
         {
-          cv::ellipse( background, rotationCenterX, rotationSize, -90.0, 00.0, (  360.0 * outHeadpose[3] ) / ( 2.0 * CV_PI ), cv::Scalar( 255, 255, 255 ), 1, CV_AA );
-          cv::ellipse( background, rotationCenterY, rotationSize, -90.0, 00.0, (  360.0 * outHeadpose[4] ) / ( 2.0 * CV_PI ), cv::Scalar( 255, 255, 255 ), 1, CV_AA );
-          cv::ellipse( background, rotationCenterZ, rotationSize, -90.0, 00.0, ( -360.0 * outHeadpose[5] ) / ( 2.0 * CV_PI ), cv::Scalar( 255, 255, 255 ), 1, CV_AA );
+          cv::ellipse( background, rotationCenterX, rotationSize, -90.0, 00.0, (  360.0 * outHeadpose[3] ) / ( 2.0 * CV_PI ), cv::Scalar( 255, 255, 255 ), 2, CV_AA );
+          cv::ellipse( background, rotationCenterY, rotationSize, -90.0, 00.0, (  360.0 * outHeadpose[4] ) / ( 2.0 * CV_PI ), cv::Scalar( 255, 255, 255 ), 2, CV_AA );
+          cv::ellipse( background, rotationCenterZ, rotationSize, -90.0, 00.0, ( -360.0 * outHeadpose[5] ) / ( 2.0 * CV_PI ), cv::Scalar( 255, 255, 255 ), 2, CV_AA );
         }
 
         //////
@@ -252,11 +252,11 @@ int main(int argc, char *argv[])
           projectedHeadGaze.x = ( headGaze.x * projectedWidth ) / screenWidth;
           projectedHeadGaze.y = ( headGaze.y * projectedHeight ) / screenHeight;
           // Clip by one pixel
-          if( projectedHeadGaze.x <= 2 ) projectedHeadGaze.x += 2;
-          if( projectedHeadGaze.x >= projectedWidth - 2 ) projectedHeadGaze.x -= 2;
-          if( projectedHeadGaze.y <= 2 ) projectedHeadGaze.y += 2;
-          if( projectedHeadGaze.y >= projectedHeight - 2 ) projectedHeadGaze.y -= 2;
-          cv::circle( background, projectedHeadGaze + headGazeBkgrOffset, 2, headGazeColor );
+          if( projectedHeadGaze.x <= 4 ) projectedHeadGaze.x += 4;
+          if( projectedHeadGaze.x >= projectedWidth - 4 ) projectedHeadGaze.x -= 4;
+          if( projectedHeadGaze.y <= 4 ) projectedHeadGaze.y += 4;
+          if( projectedHeadGaze.y >= projectedHeight - 4 ) projectedHeadGaze.y -= 4;
+          cv::circle( background, projectedHeadGaze + headGazeBkgrOffset, 3, headGazeColor, CV_FILLED, CV_AA );
         }
       }
       else
