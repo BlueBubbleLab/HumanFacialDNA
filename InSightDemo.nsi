@@ -101,12 +101,15 @@ File "..\winbin\gsl\1.8\vs2010\bin\libgslcblas.dll"
 #File "settings.ini"
 File "..\winbin\curl\7.23.1\vs2010\bin\ssleay32.dll"
 File "..\winbin\tbb\3.0u7\vs2010\bin\tbb.dll"
+File "..\winbin\msvc_rt\vcredist_x86.exe"
 SetOutPath "$INSTDIR\resources"
 File "resources\demo_dashboard.png"
 File "inSight\resources\icons\insightdemo.ico"
 SetOutPath "$INSTDIR\data"
 File /r /x ".." "inSight\data\*"
+
 AccessControl::GrantOnFile "$INSTDIR" "(S-1-5-32-545)" "FullAccess"
+ExecWait "$INSTDIR\vcredist_x86.exe /q /norestart"
 SectionEnd
 
 ######################################################################
